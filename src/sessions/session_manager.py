@@ -1,6 +1,5 @@
-
 import uuid
-from src.sessions.session import Session
+from sessions.session import Session
 from datetime import datetime
 from typing import Dict
 

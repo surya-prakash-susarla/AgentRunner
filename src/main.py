@@ -1,12 +1,14 @@
 from runner.gemini_runner import GeminiRunner
+from sessions.session_manager import SessionsManager
 from dotenv import load_dotenv
 
 load_dotenv()
 
-runner = GeminiRunner()
-query = "How are you?"
-response = runner.getResponse(query)
+session_manager = SessionsManager()
+instruction = "You are a general purpose agent to chat with the user"
+runner = GeminiRunner(session_manager=session_manager, instruction=instruction)
 
-print("Raw response from client: {response}".format(response=response))
-print("*" * 10)
-print("Text contents in response: {text}".format(text=response.text))
+while True:
+    query = input("You: ")
+    response = runner.getResponse(query)
+    print("Agent: " + response)
