@@ -1,5 +1,6 @@
 from runner.agent_runner import AgentRunner
 from google import genai
+from google.genai import types
 from sessions.session_manager import SessionsManager
 
 
@@ -23,7 +24,7 @@ class GeminiRunner(AgentRunner):
             self.session_id, query_string
         )
 
-        prompt = session.base_instruction + "\n"
+        prompt = ""
         for user_message, system_message in zip(
             session.user_messages, session.system_messages
         ):
@@ -32,7 +33,11 @@ class GeminiRunner(AgentRunner):
         prompt += "User: " + query_string + "\n"
 
         response = self.client.models.generate_content(
-            model=self.model, contents=prompt
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=session.base_instruction
+            ),
         ).text
 
         self.session_manager.recordSystemInteractionInSession(self.session_id, response)
