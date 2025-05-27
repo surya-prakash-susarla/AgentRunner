@@ -14,6 +14,12 @@ import logging
 
 logger = setup_logger(__name__, logging.INFO)
 
+# Global configuration
+DEFAULT_MAX_CHILDREN: int = 1
+
+# Global ReplicaManager instance
+global_replica_manager: Optional['ReplicaManager'] = None
+
 
 class ReplicaManager:
     def __init__(self, max_children: int = 1):
@@ -150,3 +156,18 @@ class ReplicaManager:
         except Exception as e:
             logger.error("Error terminating child agent '%s': %s", name, str(e))
             raise ChildAgentOperationError(name, "termination", str(e)) from e
+
+
+def get_replica_manager() -> ReplicaManager:
+    """Get or create the global ReplicaManager instance
+
+    Returns:
+        ReplicaManager: The global ReplicaManager instance
+    """
+    global global_replica_manager
+
+    if global_replica_manager is None:
+        logger.info("Creating global ReplicaManager instance with max_children=%d", DEFAULT_MAX_CHILDREN)
+        global_replica_manager = ReplicaManager(max_children=DEFAULT_MAX_CHILDREN)
+
+    return global_replica_manager

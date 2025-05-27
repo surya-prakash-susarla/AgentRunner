@@ -8,9 +8,8 @@ import logging
 # Set up logging
 logger = setup_logger(__name__, logging.INFO)
 
-# Global state for child agent management
-child_agent: GeminiRunner | None = None
-has_child = False
+# We'll use the replica manager instead of global state
+from process.replica_manager import get_replica_manager
 
 # Create FastMCP app
 replicator_tools_server = FastMCP("ReplicatorToolsServer")
@@ -23,27 +22,9 @@ async def create_child_agent(instruction: str) -> str:
         instruction: The base instruction/system prompt for the child agent
         
     Returns:
-        str: A message describing the result of the operation - either success message
-            with the instruction given to the new agent, or a message indicating an
-            agent already exists
+        str: A message describing the result of the operation
     """
-    global child_agent, has_child
-    
-    if has_child:
-        logger.info("Child agent already exists")
-        return "A child agent already exists. You must use ask_child_agent to interact with it."
-        
-    logger.info("Creating new child agent with instruction: %s", instruction)
-    session_manager = SessionsManager()
-    
-    # Create child agent with the same echo tool access
-    child_agent = GeminiRunner(
-        session_manager=session_manager,
-        instruction=instruction,
-        mcp_client=Client(echo_mcp_server)  # Give child the same echo tool
-    )
-    has_child = True
-    return f"Successfully created a new child agent with the following instruction: {instruction}"
+    pass
 
 @replicator_tools_server.tool()
 async def ask_child_agent(question: str) -> str:
@@ -53,14 +34,6 @@ async def ask_child_agent(question: str) -> str:
         question: The question to ask the child agent
         
     Returns:
-        str: The child agent's response, or error message if no child exists
+        str: The child agent's response
     """
-    global child_agent
-    
-    if not has_child or child_agent is None:
-        return "Error: No child agent exists. Create one first using create_child_agent."
-        
-    logger.info("Asking child agent: %s", question)
-    response = await child_agent.getResponseAsync(question)
-    logger.info("Child agent responded: %s", response)
-    return response
+    pass
