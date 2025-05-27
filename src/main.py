@@ -10,23 +10,33 @@ import asyncio
 load_dotenv()
 
 
-def getSampleToolList():
-    echo_client = Client(echo_mcp_server)
-    tools = asyncio.run(generateToolsConfig(echo_client))
-    print("Formatted tool output: {output}".format(output=tools))
-    return tools
+def getSampleClient():
+    # NOTE: A single client can contain multiple servers.
+    return Client(echo_mcp_server)
 
 print("Testing the echo server")
 test_server()
 
-sample_tools = getSampleToolList()
+# Initialize clients and session manager
 session_manager = SessionsManager()
-instruction = "You are a general purpose agent to chat with the user"
+instruction = "You are a general purpose agent to chat with the user. You can use tools when needed."
+
+# Create runner with MCP clients
 runner = GeminiRunner(
-    session_manager=session_manager, instruction=instruction, tools=sample_tools
+    session_manager=session_manager,
+    instruction=instruction,
+    mcp_client=getSampleClient(),
+    model="gemini-2.0-flash-001"
 )
 
-while True:
-    query = input("You: ")
-    response = runner.getResponse(query)
-    print("Response from agent: {response}".format(response=str(response)))
+# Main chat loop
+try:
+    while True:
+        query = input("You: ")
+        if query.lower() in ['exit', 'quit']:
+            break
+        response = runner.getResponse(query)
+        print("Response from agent: {response}".format(response=str(response)))
+finally:
+    # Cleanup when done
+    asyncio.run(runner.cleanup())
