@@ -90,7 +90,6 @@ class GeminiRunner(AgentRunner):
         return response_txt
 
     def getResponse(self, query: str):
-        print("generating response")
         return self._event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):

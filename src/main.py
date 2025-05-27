@@ -33,7 +33,7 @@ instruction = "You are a general purpose agent to chat with the user. You can us
 
 # Create runner and configure it with tools
 runner = GeminiRunner(
-    instruction=instruction, model="gemini-2.0-flash-001", log_level=logging.DEBUG
+    instruction=instruction, model="gemini-2.0-flash-001", log_level=logging.INFO
 )
 runner.configureMcp(getSampleClient())
 
