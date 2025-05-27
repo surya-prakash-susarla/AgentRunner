@@ -17,8 +17,6 @@ load_dotenv()
 def getSampleClient():
     # NOTE: A single client can contain multiple servers.
     tool_server = FastMCP("main_server")
-    # tool_server.mount("echo_tools", echo_mcp_server)
-    # tool_server.mount("replicator_tools", replicator_tools_server)
     asyncio.run(tool_server.import_server("echo_tools", echo_mcp_server))
     asyncio.run(tool_server.import_server("replicator_tools", replicator_tools_server))
     return Client(tool_server)
