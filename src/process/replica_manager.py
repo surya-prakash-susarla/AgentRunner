@@ -17,11 +17,18 @@ logger = setup_logger(__name__, logging.INFO)
 # Global configuration
 DEFAULT_MAX_CHILDREN: int = 1
 
-# Global ReplicaManager instance
-global_replica_manager: Optional["ReplicaManager"] = None
-
-
 class ReplicaManager:
+    # Class-level singleton instance
+    _instance: Optional["ReplicaManager"] = None
+
+    def __new__(cls, max_children: int = 1):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.max_children = max_children
+            cls._instance.children = {}
+            logger.info("Initialized ReplicaManager with max_children=%d", max_children)
+        return cls._instance
+
     def __init__(self, max_children: int = 1):
         """Initialize the replica manager
 
@@ -164,13 +171,4 @@ def get_replica_manager() -> ReplicaManager:
     Returns:
         ReplicaManager: The global ReplicaManager instance
     """
-    global global_replica_manager
-
-    if global_replica_manager is None:
-        logger.info(
-            "Creating global ReplicaManager instance with max_children=%d",
-            DEFAULT_MAX_CHILDREN,
-        )
-        global_replica_manager = ReplicaManager(max_children=DEFAULT_MAX_CHILDREN)
-
-    return global_replica_manager
+    return ReplicaManager(max_children=DEFAULT_MAX_CHILDREN)
