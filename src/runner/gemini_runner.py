@@ -36,9 +36,14 @@ class GeminiRunner(AgentRunner):
             model=self.model,
             contents=prompt,
             config=types.GenerateContentConfig(
-                system_instruction=session.base_instruction
+                system_instruction=session.base_instruction,
+                tools=self.tools
             ),
-        ).text
+        )
 
-        self.session_manager.recordSystemInteractionInSession(self.session_id, response)
-        return response
+        print("Raw response: {response}".format(response=response))
+
+        response_txt = response.text
+        if response_txt != None:
+            self.session_manager.recordSystemInteractionInSession(self.session_id, response_txt)
+        return response_txt
