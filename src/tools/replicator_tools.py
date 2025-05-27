@@ -61,6 +61,6 @@ async def ask_child_agent(question: str) -> str:
         return "Error: No child agent exists. Create one first using create_child_agent."
         
     logger.info("Asking child agent: %s", question)
-    response = child_agent.getResponse(question)
+    response = await child_agent.getResponseAsync(question)
     logger.info("Child agent responded: %s", response)
     return response
