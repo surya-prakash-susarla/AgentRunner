@@ -3,8 +3,10 @@ from google import genai
 from google.genai import types
 from sessions.session_manager import SessionsManager
 from fastmcp import Client
+from utils.logging_config import setup_logger
 import asyncio
-from typing import List, Dict
+import logging
+from typing import Dict
 
 
 class GeminiRunner(AgentRunner):
@@ -13,8 +15,12 @@ class GeminiRunner(AgentRunner):
         session_manager: SessionsManager,
         instruction: str,
         model: str = "gemini-2.0-flash-001",
-        mcp_client: Client = None
+        mcp_client: Client = None,
+        log_level: int = logging.INFO
     ):
+        self.logger = setup_logger(__name__, log_level)
+        self.logger.debug("Initializing GeminiRunner")
+        
         self.client = genai.Client()
         self.model = model
         self.mcp_client = mcp_client
@@ -24,6 +30,7 @@ class GeminiRunner(AgentRunner):
         self.event_loop = asyncio.new_event_loop()
 
     async def getResponseAsync(self, query_string: str):
+        self.logger.debug("Processing query: %s", query_string)
         session = self.session_manager.getSessionDetails(self.session_id)
         self.session_manager.recordUserInteractionInSession(
             self.session_id, query_string
@@ -47,7 +54,7 @@ class GeminiRunner(AgentRunner):
                 ),
             )
 
-        print("Raw response: {response}".format(response=response))
+        self.logger.debug("Raw response: %s", response)
 
         response_txt = response.text
         if response_txt is not None:

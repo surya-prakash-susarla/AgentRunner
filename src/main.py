@@ -5,7 +5,12 @@ from tools.description_generator import generateToolsConfig
 from tools.samples.server import echo_mcp_server
 from tools.samples.test_server import test_server
 from fastmcp import Client
+from utils.logging_config import setup_logger
 import asyncio
+import logging
+
+# Set up logging for the main module
+logger = setup_logger(__name__, logging.INFO)
 
 load_dotenv()
 
@@ -14,8 +19,9 @@ def getSampleClient():
     # NOTE: A single client can contain multiple servers.
     return Client(echo_mcp_server)
 
-print("Testing the echo server")
-test_server()
+logger.info("Initializing echo server for testing")
+# To send a quick message for testing the echo MCP server.
+# test_server()
 
 # Initialize clients and session manager
 session_manager = SessionsManager()
@@ -31,12 +37,14 @@ runner = GeminiRunner(
 
 # Main chat loop
 try:
+    logger.info("Starting chat session. Type 'exit' or 'quit' to end.")
     while True:
         query = input("You: ")
         if query.lower() in ['exit', 'quit']:
+            logger.info("Chat session ended by user")
             break
         response = runner.getResponse(query)
-        print("Response from agent: {response}".format(response=str(response)))
+        logger.info("Response from agent: %s", response)
 finally:
     # Cleanup when done
     asyncio.run(runner.cleanup())
