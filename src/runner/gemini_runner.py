@@ -87,24 +87,7 @@ class GeminiRunner(AgentRunner):
         return self._event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):
-        """Cleanup MCP client session if it exists"""
-        if self._mcp_client:
-            await self._mcp_client.close()
-        if self._event_loop:
+        """Cleanup event loop"""
+        if self._event_loop and not self._event_loop.is_closed():
             self._event_loop.close()
             self._event_loop = None
-
-    def __del__(self):
-        """Destructor to ensure cleanup of resources"""
-        if self._mcp_client:
-            # Since we can't use await in __del__, we run the cleanup synchronously
-            if self._event_loop and not self._event_loop.is_closed():
-                self._event_loop.run_until_complete(self.cleanup())
-            else:
-                # Create a new event loop if the original is closed
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(self.cleanup())
-                finally:
-                    loop.close()
