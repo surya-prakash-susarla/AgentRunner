@@ -61,18 +61,24 @@ class GeminiRunner(AgentRunner):
             prompt += "System: " + system_message + "\n"
         prompt += "User: " + query_string + "\n"
 
-        tools = []
         if self._mcp_client:
             async with self._mcp_client:
                 tools = [self._mcp_client.session]
-
-        response = await self.client.aio.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=session.base_instruction, tools=tools
-            ),
-        )
+                response = await self.client.aio.models.generate_content(
+                    model=self.model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=session.base_instruction, tools=tools
+                    ),
+                )
+        else:
+            response = await self.client.aio.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=session.base_instruction, tools=tools
+                ),
+            )
 
         self.logger.debug("Raw response: %s", response)
 
@@ -84,6 +90,7 @@ class GeminiRunner(AgentRunner):
         return response_txt
 
     def getResponse(self, query: str):
+        print("generating response")
         return self._event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):

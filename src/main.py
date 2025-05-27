@@ -32,7 +32,9 @@ logger.info("Initializing MCP servers for testing")
 instruction = "You are a general purpose agent to chat with the user. You can use tools when needed."
 
 # Create runner and configure it with tools
-runner = GeminiRunner(instruction=instruction, model="gemini-2.0-flash-001")
+runner = GeminiRunner(
+    instruction=instruction, model="gemini-2.0-flash-001", log_level=logging.DEBUG
+)
 runner.configureMcp(getSampleClient())
 
 # Register the runner with the cleanup manager
