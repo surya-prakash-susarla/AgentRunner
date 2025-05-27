@@ -32,12 +32,12 @@ class ReplicaManager:
         self.children: Dict[str, AgentProcess] = {}
         logger.info("Initialized ReplicaManager with max_children=%d", max_children)
 
-    def create_child(self, name: str, runner: GeminiRunner) -> None:
+    def create_child(self, name: str, instruction: str) -> None:
         """Create a new child agent process
 
         Args:
             name: Unique identifier for the child
-            runner: The GeminiRunner instance for the child
+            instruction: The instruction/system prompt for the child agent
 
         Raises:
             MaxChildrenExceededError: If maximum number of children has been reached
@@ -60,7 +60,7 @@ class ReplicaManager:
 
         try:
             logger.info("Creating new AgentProcess for child '%s'", name)
-            process = AgentProcess(name=name, runner=runner)
+            process = AgentProcess(name=name, instruction=instruction)
             self.children[name] = process
             logger.info("Successfully created child agent '%s'", name)
         except Exception as e:

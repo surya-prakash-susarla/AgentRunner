@@ -1,5 +1,6 @@
 from multiprocessing import Process, Queue, current_process
 from runner.agent_runner import AgentRunner
+from runner.gemini_runner import GeminiRunner
 from typing import Optional
 from utils.logging_config import setup_logger
 import asyncio
@@ -8,53 +9,66 @@ import os
 
 
 class AgentProcess:
-    def __init__(self, name: str, runner: AgentRunner):
+    def __init__(self, name: str, instruction: str):
         self.name = name
         self.input_q = Queue()
         self.output_q = Queue()
-        self.runner = runner
+        self.instruction = instruction
         self.logger = setup_logger(__name__, logging.INFO)
         self.logger.info("Initializing agent process %s", name)
 
         # Launch the process
         self.proc = Process(
             target=self._run_agent,
-            args=(self.input_q, self.output_q, self.runner),
+            args=(self.input_q, self.output_q, self.instruction),
             daemon=True,
         )
         self.proc.start()
 
     @staticmethod
-    def _run_agent(input_q: Queue, output_q: Queue, runner: AgentRunner):
+    def _run_agent(input_q: Queue, output_q: Queue, instruction: str):
         """Run loop for the child agent."""
 
         proc = current_process()
         logger = setup_logger(f"{__name__}.{proc.name}", logging.INFO)
         logger.info("Starting agent process. PID: %d, Name: %s", os.getpid(), proc.name)
 
+        runner = None
         try:
+            # Create runner inside the child process
+            runner = GeminiRunner(instruction=instruction)
+
             while True:
                 query = input_q.get()
                 if query == "__EXIT__":
-                    logger.info(
-                        "Received exit signal. Shutting down process %d", os.getpid()
-                    )
+                    logger.info("Received exit signal. Shutting down process %d", os.getpid())
                     break
+
                 try:
                     response = runner.getResponse(query)
                 except Exception as e:
+                    logger.error("Error processing query: %s", str(e))
                     response = f"[Agent Error]: {str(e)}"
-                output_q.put(response)
-        finally:
-            # Ensure cleanup runs when the process exits
-            logger.info("Running cleanup for process %d", os.getpid())
-            loop = asyncio.new_event_loop()
+                    
+                try:
+                    output_q.put(response)
+                except Exception as e:
+                    logger.error("Error sending response: %s", str(e))
+                    
+        except Exception as e:
+            logger.error("Fatal error in agent process: %s", str(e))
             try:
-                loop.run_until_complete(runner.cleanup())
-            except Exception as e:
-                logger.error("Error during cleanup: %s", str(e))
-            finally:
-                loop.close()
+                output_q.put(f"[Fatal Agent Error]: {str(e)}")
+            except:
+                pass
+        finally:
+            if runner:
+                try:
+                    asyncio.run(runner.cleanup())
+                    logger.info("Runner cleanup completed")
+                except Exception as e:
+                    logger.error("Error during runner cleanup: %s", str(e))
+
 
     def ask(self, message: str, timeout: Optional[float] = None) -> str:
         """Send message to the agent and get the response."""

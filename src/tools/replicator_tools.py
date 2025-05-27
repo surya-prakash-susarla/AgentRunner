@@ -42,15 +42,12 @@ async def create_child_agent(instruction: str) -> str:
         # Get the global replica manager
         replica_manager = get_replica_manager()
 
-        # Create a basic GeminiRunner for the child
-        runner = GeminiRunner(instruction=instruction)
-
         # Generate a unique name for this agent
         agent_name = f"agent_{len(replica_manager.children) + 1}"
 
         # Create the child process through the replica manager
         logger.info("Creating child agent with name: %s", agent_name)
-        replica_manager.create_child(agent_name, runner)
+        replica_manager.create_child(agent_name, instruction)
 
         success_msg = f"Successfully created child agent '{agent_name}' with instruction: {instruction}"
         logger.info(success_msg)
