@@ -24,7 +24,6 @@ class GeminiRunner(AgentRunner):
         self.client = genai.Client()
         self.model = model
         self.mcp_client = mcp_client
-        self.mcp_sessions: Dict = {}
         self.session_manager = session_manager
         self.session_id = self.session_manager.createSession(instruction)
         self.event_loop = asyncio.new_event_loop()
@@ -65,6 +64,23 @@ class GeminiRunner(AgentRunner):
         return self.event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):
-        """Cleanup all MCP sessions"""
-        for session in self.mcp_sessions.values():
-            await session.close()
+        """Cleanup MCP client session if it exists"""
+        if self.mcp_client:
+            await self.mcp_client.close()
+        if self.event_loop:
+            self.event_loop.close()
+            
+    def __del__(self):
+        """Destructor to ensure cleanup of resources"""
+        if self.mcp_client:
+            # Since we can't use await in __del__, we run the cleanup synchronously
+            if self.event_loop and not self.event_loop.is_closed():
+                self.event_loop.run_until_complete(self.cleanup())
+            else:
+                # Create a new event loop if the original is closed
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(self.cleanup())
+                finally:
+                    loop.close()
