@@ -1,11 +1,14 @@
-from runner.gemini_runner import GeminiRunner
-from dotenv import load_dotenv
-from tools.samples.server import echo_mcp_server
-from tools.replicator_tools import replicator_tools_server
-from fastmcp import Client, FastMCP
-from utils.logging_config import setup_logger
 import asyncio
 import logging
+
+from dotenv import load_dotenv
+from fastmcp import Client, FastMCP
+
+from runner.gemini_runner import GeminiRunner
+from tools.samples.server import echo_mcp_server
+from tools.replicator_tools import replicator_tools_server
+from utils.cleanup import cleanup_manager
+from utils.logging_config import setup_logger
 
 # Set up logging for the main module
 logger = setup_logger(__name__, logging.INFO)
@@ -32,6 +35,9 @@ instruction = "You are a general purpose agent to chat with the user. You can us
 runner = GeminiRunner(instruction=instruction, model="gemini-2.0-flash-001")
 runner.configureMcp(getSampleClient())
 
+# Register the runner with the cleanup manager
+cleanup_manager.register_runner(runner)
+
 # Main chat loop
 try:
     logger.info("Starting chat session. Type 'exit' or 'quit' to end.")
@@ -42,6 +48,10 @@ try:
             break
         response = runner.getResponse(query)
         logger.info("Response from agent: %s", response)
+except KeyboardInterrupt:
+    logger.info("\nReceived keyboard interrupt, shutting down...")
+except Exception as e:
+    logger.error("Unexpected error: %s", str(e))
 finally:
-    # Cleanup when done
-    asyncio.run(runner.cleanup())
+    # Run cleanup directly here as well, in case the signal handlers don't trigger
+    cleanup_manager.cleanup_all_processes()
