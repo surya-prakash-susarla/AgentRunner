@@ -1,11 +1,9 @@
 from runner.gemini_runner import GeminiRunner
 from sessions.session_manager import SessionsManager
 from dotenv import load_dotenv
-from tools.description_generator import generateToolsConfig
 from tools.samples.server import echo_mcp_server
-from tools.replicator_tools import agent_mcp_server
-from tools.samples.test_server import test_server
-from fastmcp import Client
+from tools.replicator_tools import replicator_tools_server
+from fastmcp import Client, FastMCP
 from utils.logging_config import setup_logger
 import asyncio
 import logging
@@ -18,8 +16,13 @@ load_dotenv()
 
 def getSampleClient():
     # NOTE: A single client can contain multiple servers.
-    # Combine both echo and replicator tools in one client
-    return Client([echo_mcp_server, agent_mcp_server])
+    tool_server = FastMCP("main_server")
+    # tool_server.mount("echo_tools", echo_mcp_server)
+    # tool_server.mount("replicator_tools", replicator_tools_server)
+    asyncio.run(tool_server.import_server("echo_tools", echo_mcp_server))
+    asyncio.run(tool_server.import_server("replicator_tools", replicator_tools_server))
+    return Client(tool_server)
+
 
 logger.info("Initializing MCP servers for testing")
 # To send a quick message for testing the echo MCP server.
@@ -34,7 +37,7 @@ runner = GeminiRunner(
     session_manager=session_manager,
     instruction=instruction,
     mcp_client=getSampleClient(),
-    model="gemini-2.0-flash-001"
+    model="gemini-2.0-flash-001",
 )
 
 # Main chat loop
@@ -42,7 +45,7 @@ try:
     logger.info("Starting chat session. Type 'exit' or 'quit' to end.")
     while True:
         query = input("You: ")
-        if query.lower() in ['exit', 'quit']:
+        if query.lower() in ["exit", "quit"]:
             logger.info("Chat session ended by user")
             break
         response = runner.getResponse(query)

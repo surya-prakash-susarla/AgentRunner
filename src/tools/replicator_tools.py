@@ -13,9 +13,9 @@ child_agent: GeminiRunner | None = None
 has_child = False
 
 # Create FastMCP app
-agent_mcp_server = FastMCP()
+replicator_tools_server = FastMCP("ReplicatorToolsServer")
 
-@agent_mcp_server.tool()
+@replicator_tools_server.tool()
 async def create_child_agent(instruction: str) -> str:
     """Creates a child agent if one doesn't exist yet
     
@@ -45,7 +45,7 @@ async def create_child_agent(instruction: str) -> str:
     has_child = True
     return f"Successfully created a new child agent with the following instruction: {instruction}"
 
-@agent_mcp_server.tool()
+@replicator_tools_server.tool()
 async def ask_child_agent(question: str) -> str:
     """Sends a question to the child agent and waits for response
     
