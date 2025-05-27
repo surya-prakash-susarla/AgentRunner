@@ -21,6 +21,7 @@ class GeminiRunner(AgentRunner):
         self.mcp_sessions: Dict = {}
         self.session_manager = session_manager
         self.session_id = self.session_manager.createSession(instruction)
+        self.event_loop = asyncio.new_event_loop()
 
     async def getResponseAsync(self, query_string: str):
         session = self.session_manager.getSessionDetails(self.session_id)
@@ -54,7 +55,7 @@ class GeminiRunner(AgentRunner):
         return response_txt
     
     def getResponse(self, query: str):
-        return asyncio.run(self.getResponseAsync(query))
+        return self.event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):
         """Cleanup all MCP sessions"""
