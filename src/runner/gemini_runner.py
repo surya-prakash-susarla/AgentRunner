@@ -1,38 +1,56 @@
-from runner.agent_runner import AgentRunner
-from google import genai
-from google.genai import types
-from sessions.session_manager import SessionsManager
-from fastmcp import Client
-from utils.logging_config import setup_logger
 import asyncio
 import logging
-from typing import Dict
+
+from fastmcp import Client, FastMCP
+from google import genai
+from google.genai import types
+
+from runner.agent_runner import AgentRunner
+from sessions.session_manager import SessionsManager
+from utils.logging_config import setup_logger
 
 
 class GeminiRunner(AgentRunner):
     def __init__(
         self,
-        session_manager: SessionsManager,
         instruction: str,
         model: str = "gemini-2.0-flash-001",
-        mcp_client: Client = None,
-        log_level: int = logging.INFO
+        log_level: int = logging.INFO,
     ):
         self.logger = setup_logger(__name__, log_level)
         self.logger.debug("Initializing GeminiRunner")
-        
+
         self.client = genai.Client()
         self.model = model
-        self.mcp_client = mcp_client
-        self.session_manager = session_manager
-        self.session_id = self.session_manager.createSession(instruction)
-        self.event_loop = asyncio.new_event_loop()
+        self.instruction = instruction
+        self.log_level = log_level
+
+        # Initialize session manager immediately
+        self._session_manager = SessionsManager()
+        self._session_id = self._session_manager.createSession(instruction)
+
+        # Initialize event loop
+        self._event_loop = asyncio.new_event_loop()
+
+        # MCP client will be configured later
+        self._mcp_client = None
+
+        self.logger.debug("GeminiRunner initialized with session %s", self._session_id)
+
+    def configureMcp(self, client: Client) -> None:
+        """Configure the MCP client for this runner.
+
+        Args:
+            client: The configured MCP client to use
+        """
+        self.logger.debug("Configuring MCP client")
+        self._mcp_client = client
 
     async def getResponseAsync(self, query_string: str):
         self.logger.debug("Processing query: %s", query_string)
-        session = self.session_manager.getSessionDetails(self.session_id)
-        self.session_manager.recordUserInteractionInSession(
-            self.session_id, query_string
+        session = self._session_manager.getSessionDetails(self._session_id)
+        self._session_manager.recordUserInteractionInSession(
+            self._session_id, query_string
         )
 
         prompt = ""
@@ -43,39 +61,45 @@ class GeminiRunner(AgentRunner):
             prompt += "System: " + system_message + "\n"
         prompt += "User: " + query_string + "\n"
 
-        async with self.mcp_client:
-            response = await self.client.aio.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=session.base_instruction,
-                    tools=[self.mcp_client.session]
-                ),
-            )
+        tools = []
+        if self._mcp_client:
+            async with self._mcp_client:
+                tools = [self._mcp_client.session]
+
+        response = await self.client.aio.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=session.base_instruction, tools=tools
+            ),
+        )
 
         self.logger.debug("Raw response: %s", response)
 
         response_txt = response.text
         if response_txt is not None:
-            self.session_manager.recordSystemInteractionInSession(self.session_id, response_txt)
+            self._session_manager.recordSystemInteractionInSession(
+                self._session_id, response_txt
+            )
         return response_txt
-    
+
     def getResponse(self, query: str):
-        return self.event_loop.run_until_complete(self.getResponseAsync(query))
+        return self._event_loop.run_until_complete(self.getResponseAsync(query))
 
     async def cleanup(self):
         """Cleanup MCP client session if it exists"""
-        if self.mcp_client:
-            await self.mcp_client.close()
-        if self.event_loop:
-            self.event_loop.close()
-            
+        if self._mcp_client:
+            await self._mcp_client.close()
+        if self._event_loop:
+            self._event_loop.close()
+            self._event_loop = None
+
     def __del__(self):
         """Destructor to ensure cleanup of resources"""
-        if self.mcp_client:
+        if self._mcp_client:
             # Since we can't use await in __del__, we run the cleanup synchronously
-            if self.event_loop and not self.event_loop.is_closed():
-                self.event_loop.run_until_complete(self.cleanup())
+            if self._event_loop and not self._event_loop.is_closed():
+                self._event_loop.run_until_complete(self.cleanup())
             else:
                 # Create a new event loop if the original is closed
                 loop = asyncio.new_event_loop()
