@@ -61,35 +61,31 @@ async def create_child_agent(instruction: str) -> str:
 
 
 @replicator_tools_server.tool()
-async def ask_child_agent(question: str) -> str:
-    """Sends a question to the child agent and waits for response
+async def ask_child_agent(child_name: str, question: str) -> str:
+    """Sends a question to a specific child agent and waits for response
 
     Args:
+        child_name: The name of the child agent to ask (e.g. 'agent_1')
         question: The question to ask the child agent
 
     Returns:
         str: The child agent's response
 
     Raises:
-        ChildAgentNotFoundError: If no child agent exists
+        ChildAgentNotFoundError: If the specified child agent doesn't exist
         ChildAgentNotRunningError: If the child agent process is not running
         ChildAgentTimeoutError: If the request times out
         ChildAgentOperationError: If there's an error getting the response
     """
-    logger.info("Received request to ask child agent: %s", question)
+    logger.info("Received request to ask child agent '%s': %s", child_name, question)
 
     try:
         # Get the global replica manager
         replica_manager = get_replica_manager()
 
-        # Get the first child (since we only support one for now)
-        if not replica_manager.children:
-            raise ChildAgentNotFoundError(
-                "any"
-            )  # No specific name since we're getting first child
-
-        # Get the first child's name
-        child_name = next(iter(replica_manager.children.keys()))
+        # Check if the specified child exists
+        if child_name not in replica_manager.children:
+            raise ChildAgentNotFoundError(child_name)
 
         # Ask the question and return the response
         logger.info("Forwarding question to child agent '%s'", child_name)
