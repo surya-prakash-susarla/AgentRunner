@@ -132,3 +132,41 @@ async def get_current_children() -> str:
         logger.error(error_msg)
         # Re-raise the exception to be handled by the MCP framework
         raise
+
+
+@replicator_tools_server.tool()
+async def kill_child_agent(child_name: str) -> str:
+    """Terminates a specific child agent process
+
+    Args:
+        child_name: The name of the child agent to terminate (e.g. 'agent_1')
+
+    Returns:
+        str: A message confirming the child agent was terminated
+
+    Raises:
+        ChildAgentNotFoundError: If the specified child agent doesn't exist
+        ChildAgentOperationError: If there's an error terminating the process
+    """
+    logger.info("Received request to terminate child agent '%s'", child_name)
+
+    try:
+        # Get the global replica manager
+        replica_manager = get_replica_manager()
+
+        # Check if the specified child exists
+        if child_name not in replica_manager.children:
+            raise ChildAgentNotFoundError(child_name)
+
+        # Kill the child process
+        replica_manager.kill_child(child_name)
+
+        success_msg = f"Successfully terminated child agent '{child_name}'"
+        logger.info(success_msg)
+        return success_msg
+
+    except Exception as e:
+        error_msg = f"Failed to terminate child agent: {str(e)}"
+        logger.error(error_msg)
+        # Re-raise the exception to be handled by the MCP framework
+        raise
