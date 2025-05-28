@@ -102,3 +102,37 @@ async def ask_child_agent(question: str) -> str:
         logger.error(error_msg)
         # Re-raise the exception to be handled by the MCP framework
         raise
+
+
+@replicator_tools_server.tool()
+async def get_current_children() -> str:
+    """Gets the names of all currently running child agents
+
+    Returns:
+        str: A message listing all current child agent names, or indicating no children exist
+
+    Raises:
+        ChildAgentOperationError: If there's an error accessing the children
+    """
+    logger.info("Received request to list current child agents")
+
+    try:
+        # Get the global replica manager
+        replica_manager = get_replica_manager()
+
+        if not replica_manager.children:
+            return "No child agents currently exist"
+
+        # Get all child names and their states
+        child_names = list(replica_manager.children.keys())
+        child_list = ", ".join(child_names)
+
+        success_msg = f"Current child agents: {child_list}. Use the exact names when referencing children in future queries."
+        logger.info(success_msg)
+        return success_msg
+
+    except Exception as e:
+        error_msg = f"Failed to list child agents: {str(e)}"
+        logger.error(error_msg)
+        # Re-raise the exception to be handled by the MCP framework
+        raise
