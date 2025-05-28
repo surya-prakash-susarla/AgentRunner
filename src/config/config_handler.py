@@ -12,13 +12,18 @@ CONFIG_DIR = os.path.expanduser("~/.replica-llm")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
 DEFAULT_CONFIG = {
-    "agentRuntimes": [
-        {
-            "runner": "gemini",
-            "isMain": True,
-            "api_key": ""  # Will be filled by user
+    "agents": {
+        "main": {
+            "runtime": {
+                "runner": "gemini",
+                "isMain": True,
+                "api_key": None,
+                "model": "gemini-pro"
+            },
+            "tools": [],
+            "working_dir": None
         }
-    ],
+    },
     "runtime": {
         "maxGlobalChildren": 100,
         "defaultTimeoutSeconds": 60

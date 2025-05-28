@@ -14,7 +14,7 @@ from src.tools.samples.server import echo_mcp_server
 from src.tools.replicator_tools import replicator_tools_server
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
-from src.utils.config_handler import edit_config, get_config
+from src.config.config_handler import edit_config, get_config
 
 # Set up logging for the main module
 logger = setup_logger(__name__, logging.INFO)
