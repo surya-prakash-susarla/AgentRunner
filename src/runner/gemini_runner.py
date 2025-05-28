@@ -76,7 +76,7 @@ class GeminiRunner(AgentRunner):
                 model=self.model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    system_instruction=session.base_instruction, tools=tools
+                    system_instruction=session.base_instruction
                 ),
             )
 
