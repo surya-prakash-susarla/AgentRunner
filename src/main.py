@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from dotenv import load_dotenv
 from fastmcp import Client, FastMCP
@@ -9,6 +10,7 @@ from tools.samples.server import echo_mcp_server
 from tools.replicator_tools import replicator_tools_server
 from utils.cleanup import cleanup_manager
 from utils.logging_config import setup_logger
+from utils.config_handler import edit_config
 
 # Set up logging for the main module
 logger = setup_logger(__name__, logging.INFO)
@@ -61,4 +63,7 @@ def main_runner():
 
 
 if __name__ == "__main__":
-    main_runner()
+    if len(sys.argv) > 1 and sys.argv[1] == "edit-config":
+        edit_config()
+    else:
+        main_runner()
