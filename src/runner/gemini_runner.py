@@ -5,9 +5,9 @@ from fastmcp import Client, FastMCP
 from google import genai
 from google.genai import types
 
-from runner.agent_runner import AgentRunner
-from sessions.session_manager import SessionsManager
-from utils.logging_config import setup_logger
+from src.runner.agent_runner import AgentRunner
+from src.sessions.session_manager import SessionsManager
+from src.utils.logging_config import setup_logger
 
 
 class GeminiRunner(AgentRunner):

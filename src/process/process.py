@@ -1,8 +1,8 @@
 from multiprocessing import Process, Queue, current_process
-from runner.agent_runner import AgentRunner
-from runner.gemini_runner import GeminiRunner
+from src.runner.agent_runner import AgentRunner
+from src.runner.gemini_runner import GeminiRunner
 from typing import Optional
-from utils.logging_config import setup_logger
+from src.utils.logging_config import setup_logger
 import asyncio
 import logging
 import os

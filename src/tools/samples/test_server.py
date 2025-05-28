@@ -1,4 +1,4 @@
-from tools.samples.server import echo_mcp_server
+from src.tools.samples.server import echo_mcp_server
 from fastmcp import Client
 import asyncio
 

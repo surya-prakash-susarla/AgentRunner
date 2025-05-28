@@ -2,15 +2,15 @@ import logging
 
 from fastmcp import FastMCP, Client
 
-from process.exceptions import (
+from src.process.exceptions import (
     ChildAgentNotFoundError,
     ChildAgentNotRunningError,
     ChildAgentTimeoutError,
     ChildAgentOperationError,
 )
-from process.replica_manager import get_replica_manager
-from runner.gemini_runner import GeminiRunner
-from utils.logging_config import setup_logger
+from src.process.replica_manager import get_replica_manager
+from src.runner.gemini_runner import GeminiRunner
+from src.utils.logging_config import setup_logger
 
 # Set up logging
 logger = setup_logger(__name__, logging.INFO)

@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from utils.logging_config import setup_logger
+from src.utils.logging_config import setup_logger
 import logging
 
 logger = setup_logger(__name__, logging.INFO)

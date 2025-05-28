@@ -4,7 +4,7 @@ import logging
 import signal
 from typing import Optional
 
-from utils.logging_config import setup_logger
+from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__, logging.INFO)
 
@@ -26,7 +26,7 @@ class ProcessCleanup:
     
     def cleanup_all_processes(self) -> None:
         """Cleanup function to ensure all child processes are terminated."""
-        from process.replica_manager import get_replica_manager
+        from src.process.replica_manager import get_replica_manager
         
         logger.info("Running cleanup for all processes")
         

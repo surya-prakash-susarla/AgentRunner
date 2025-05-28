@@ -1,0 +1,2 @@
+[console_scripts]
+replica-llm = src.main:main
