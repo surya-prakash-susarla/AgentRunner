@@ -1,4 +1,5 @@
 from typing import Optional, Dict
+from functools import lru_cache
 from process.process import AgentProcess
 from runner.gemini_runner import GeminiRunner
 from utils.logging_config import setup_logger
@@ -18,17 +19,6 @@ logger = setup_logger(__name__, logging.INFO)
 DEFAULT_MAX_CHILDREN: int = 1
 
 class ReplicaManager:
-    # Class-level singleton instance
-    _instance: Optional["ReplicaManager"] = None
-
-    def __new__(cls, max_children: int = 1):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance.max_children = max_children
-            cls._instance.children = {}
-            logger.info("Initialized ReplicaManager with max_children=%d", max_children)
-        return cls._instance
-
     def __init__(self, max_children: int = 1):
         """Initialize the replica manager
 
@@ -165,6 +155,7 @@ class ReplicaManager:
             raise ChildAgentOperationError(name, "termination", str(e)) from e
 
 
+@lru_cache(maxsize=1)
 def get_replica_manager() -> ReplicaManager:
     """Get or create the global ReplicaManager instance
 
