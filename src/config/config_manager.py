@@ -9,10 +9,16 @@ import logging
 
 logger = setup_logger(__name__, logging.INFO)
 
+from enum import Enum
+
+class RunnerType(Enum):
+    """Supported runner types"""
+    GEMINI = "gemini"
+
 @dataclass
 class AgentRuntime:
     """Runtime configuration for an agent."""
-    runner: str
+    runner: RunnerType
     is_main: bool
     api_key: Optional[str] = None
     model: str = "gemini-pro"
@@ -32,7 +38,6 @@ class AgentConfig:
     name: str
     runtime: AgentRuntime
     tools: List[str] = field(default_factory=list)
-    working_dir: Optional[str] = None
 
 class ConfigManager:
     def __init__(self):
@@ -87,8 +92,16 @@ class ConfigManager:
                     logger.warning(f"Skipping agent {name}: missing required runtime fields")
                     continue
 
+                # Validate runner type
+                runner_str = runtime_data["runner"]
+                try:
+                    runner_type = RunnerType(runner_str)
+                except ValueError:
+                    logger.error(f"Invalid runner type '{runner_str}' for agent {name}. Must be one of: {[r.value for r in RunnerType]}")
+                    continue
+
                 runtime = AgentRuntime(
-                    runner=runtime_data["runner"],
+                    runner=runner_type,
                     is_main=runtime_data["isMain"],
                     api_key=runtime_data.get("api_key"),
                     model=runtime_data.get("model")
@@ -96,8 +109,7 @@ class ConfigManager:
                 self._agent_configs[name] = AgentConfig(
                     name=name,
                     runtime=runtime,
-                    tools=agent_data.get("tools", []),
-                    working_dir=agent_data.get("working_dir")
+                    tools=agent_data.get("tools", [])
                 )
 
             # Load runtime config if present

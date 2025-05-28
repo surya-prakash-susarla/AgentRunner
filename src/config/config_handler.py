@@ -20,8 +20,7 @@ DEFAULT_CONFIG = {
                 "api_key": None,
                 "model": "gemini-pro"
             },
-            "tools": [],
-            "working_dir": None
+            "tools": []
         }
     },
     "runtime": {
