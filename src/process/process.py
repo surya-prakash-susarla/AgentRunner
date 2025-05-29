@@ -9,7 +9,7 @@ import os
 
 
 from src.config.config_manager import RunnerType
-from src.runner.runner_generator import generate_runner
+from src.runner.runner_generator import generate_runner, setup_runtime
 
 
 class AgentProcess:
@@ -45,6 +45,7 @@ class AgentProcess:
             # TODO: Replace by creating an actual runner here.
             # Create runner inside the child process
             runner = generate_runner(type=child_type, instruction=instruction)
+            setup_runtime(child_type)
 
             while True:
                 query = input_q.get()

@@ -38,6 +38,7 @@ def get_sample_client():
 
 @app.command()
 def chat():
+    get_config()
     """Start an interactive chat session with an LLM agent"""
     runner = None
     try:

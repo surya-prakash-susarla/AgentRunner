@@ -196,7 +196,7 @@ async def get_available_child_types() -> List[str]:
     try:
         config_manager = get_config_manager()
         available_runners = [
-            agent.runtime.runner.value for agent in config_manager.agents.values()
+            agent.runner.value for agent in config_manager.agents.values()
         ]
         return available_runners
     except Exception as e:
