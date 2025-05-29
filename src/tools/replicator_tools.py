@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from fastmcp import FastMCP, Client
 
@@ -169,4 +170,24 @@ async def kill_child_agent(child_name: str) -> str:
         error_msg = f"Failed to terminate child agent: {str(e)}"
         logger.error(error_msg)
         # Re-raise the exception to be handled by the MCP framework
+        raise
+
+
+@replicator_tools_server.tool()
+async def get_available_child_types() -> List[str]:
+    """Gets the available child agent types from the config.
+
+    Returns:
+        List[str]: A list of the available child agent types. These types should be used exactly as returned.
+    """
+    logger.info("Received request to list available child agent types")
+    from src.config.config_manager import get_config_manager
+
+    try:
+        config_manager = get_config_manager()
+        available_runners = [agent.runtime.runner.value for agent in config_manager.agents.values()]
+        return available_runners
+    except Exception as e:
+        error_msg = f"Failed to list available child agent types: {str(e)}"
+        logger.error(error_msg)
         raise
