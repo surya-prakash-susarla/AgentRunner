@@ -65,29 +65,21 @@ The configuration file is stored at `~/.replica-llm/config.json`. Here's an exam
 
 ```json
 {
-  "agents": {
-    "main": {
-      "runtime": {
-        "runner": "gemini",
+  "runners": [
+      {
+        "type": "gemini",
         "isMain": true,
-        "api_key": "your-api-key-here",
-        "model": "gemini-pro"
+        "apiKey": "your-api-key-here",
+        "model": "gemini-pro",
+        "tools": ["tool1", "tool2", "tool3"]
       },
-      "tools": [
-        "echo_tools",
-        "replicator_tools"
-      ]
-    },
-    "assistant": {
-      "runtime": {
-        "runner": "gemini",
-        "isMain": false,
-        "api_key": "your-api-key-here",
-        "model": "gemini-pro"
-      },
-      "tools": ["echo_tools"]
-    }
-  },
+      {
+        "type": "chatgpt",
+        "apiKey": "your-api-key-here",
+        "model": "gpt-4o",
+        "tools": ["tool1", "tool2", "tool3"]
+      }
+  ],
   "runtime": {
     "maxGlobalChildren": 100,
     "defaultTimeoutSeconds": 60
