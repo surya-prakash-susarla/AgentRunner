@@ -12,12 +12,9 @@ from src.process.exceptions import (
     ChildAgentOperationError,
 )
 import logging
-from src.config.config_manager import RunnerType
+from src.config.config_manager import RunnerType, get_config_manager
 
 logger = setup_logger(__name__, logging.INFO)
-
-# Global configuration
-DEFAULT_MAX_CHILDREN: int = 1
 
 
 class ReplicaManager:
@@ -167,4 +164,4 @@ def get_replica_manager() -> ReplicaManager:
     Returns:
         ReplicaManager: The global ReplicaManager instance
     """
-    return ReplicaManager(max_children=DEFAULT_MAX_CHILDREN)
+    return ReplicaManager(max_children=get_config_manager().runtime.max_global_children)
