@@ -22,33 +22,22 @@ class AgentRuntime:
     is_main: bool
     api_key: Optional[str] = None
     model: str = "gemini-pro"
+    tools: List[str] = field(default_factory=list)
 
 @dataclass
 class RuntimeConfig:
     max_global_children: int
     default_timeout_seconds: int
 
-@dataclass
-class ToolServerConfig:
-    pass  # Will be expanded based on needs
-
-@dataclass
-class AgentConfig:
-    """Configuration for an agent."""
-    name: str
-    runtime: AgentRuntime
-    tools: List[str] = field(default_factory=list)
-
 class ConfigManager:
     def __init__(self):
         """Initialize configuration manager and load config immediately"""
-        self._agent_configs: Dict[str, AgentConfig] = {}
+        self._agent_configs: Dict[str, AgentRuntime] = {}
         self._runtime: Optional[RuntimeConfig] = None
-        self._tool_servers: Dict[str, ToolServerConfig] = {}
         self._load_config()
 
     @property
-    def agents(self) -> Dict[str, AgentConfig]:
+    def agents(self) -> Dict[str, AgentRuntime]:
         """Get all agent configurations"""
         return self._agent_configs.copy()
 
@@ -57,19 +46,14 @@ class ConfigManager:
         """Get runtime configuration"""
         return self._runtime
 
-    @property
-    def tool_servers(self) -> Dict[str, ToolServerConfig]:
-        """Get tool server configurations"""
-        return self._tool_servers
-
-    def get_main_agent(self) -> Optional[AgentConfig]:
+    def get_main_agent(self) -> Optional[AgentRuntime]:
         """Get the main agent configuration"""
         for agent in self._agent_configs.values():
-            if agent.runtime.is_main:
+            if agent.is_main:
                 return agent
         return None
 
-    def get_agent(self, name: str) -> Optional[AgentConfig]:
+    def get_agent(self, name: str) -> Optional[AgentRuntime]:
         """Get an agent's configuration"""
         return self._agent_configs.get(name)
 
@@ -79,38 +63,31 @@ class ConfigManager:
             from src.config.config_handler import get_config
             config_data = get_config()
 
-            # Load agent configurations
-            agents_data = config_data.get("agents", {})
+            # Load agent configurations from runners array
+            runners_data = config_data.get("runners", [])
             self._agent_configs = {}
-            for name, agent_data in agents_data.items():
-                if "runtime" not in agent_data:
-                    logger.warning(f"Skipping agent {name}: missing runtime configuration")
-                    continue
-                
-                runtime_data = agent_data["runtime"]
-                if "runner" not in runtime_data or "isMain" not in runtime_data:
-                    logger.warning(f"Skipping agent {name}: missing required runtime fields")
+            for i, runner_data in enumerate(runners_data):
+                if "type" not in runner_data or "isMain" not in runner_data:
+                    logger.warning(f"Skipping runner {i}: missing required fields")
                     continue
 
                 # Validate runner type
-                runner_str = runtime_data["runner"]
+                runner_str = runner_data["type"]
                 try:
                     runner_type = RunnerType(runner_str)
                 except ValueError:
-                    logger.error(f"Invalid runner type '{runner_str}' for agent {name}. Must be one of: {[r.value for r in RunnerType]}")
+                    logger.error(f"Invalid runner type '{runner_str}' for runner {i}. Must be one of: {[r.value for r in RunnerType]}")
                     continue
 
+                name = f"{runner_str}_{i}"  # Generate a unique name
                 runtime = AgentRuntime(
                     runner=runner_type,
-                    is_main=runtime_data["isMain"],
-                    api_key=runtime_data.get("api_key"),
-                    model=runtime_data.get("model")
+                    is_main=runner_data["isMain"],
+                    tools=runner_data.get("tools", []),
+                    api_key=runner_data.get("apiKey"),
+                    model=runner_data.get("model")
                 )
-                self._agent_configs[name] = AgentConfig(
-                    name=name,
-                    runtime=runtime,
-                    tools=agent_data.get("tools", [])
-                )
+                self._agent_configs[name] = runtime
 
             # Load runtime config if present
             runtime_data = config_data.get("runtime")
@@ -120,8 +97,6 @@ class ConfigManager:
                     default_timeout_seconds=runtime_data["defaultTimeoutSeconds"]
                 )
 
-            # Load tool servers if present
-            self._tool_servers = {}  # Will be expanded when tool server config is defined
             logger.info("Configuration loaded successfully")
 
         except Exception as e:
