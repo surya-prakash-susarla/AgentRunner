@@ -14,7 +14,7 @@ def generate_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]
     Returns:
         An instance of AgentRunner or None if generation fails
     """
-    if type == RunnerType.GEMINI:
+    if type == RunnerType.GEMINI.value:
         from src.runner.gemini_runner import GeminiRunner
 
         return GeminiRunner(instruction=instruction)
@@ -24,7 +24,7 @@ def generate_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]
 
 def setup_runtime(type: RunnerType):
     # TODO: This is under the assumption that we can only have on type of any LLM.
-    runtime = get_config_manager().agents[type.value]
+    runtime = get_config_manager().agents[type]
 
     if type == RunnerType.GEMINI:
         os.environ["GOOGLE_API_KEY"] = runtime.api_key
