@@ -11,23 +11,29 @@ logger = setup_logger(__name__, logging.INFO)
 
 from enum import Enum
 
+
 class RunnerType(Enum):
     """Supported runner types"""
+
     GEMINI = "gemini"
+
 
 @dataclass
 class AgentRuntime:
     """Runtime configuration for an agent."""
+
     runner: RunnerType
     is_main: bool
     api_key: Optional[str] = None
     model: str = "gemini-pro"
     tools: List[str] = field(default_factory=list)
 
+
 @dataclass
 class RuntimeConfig:
     max_global_children: int
     default_timeout_seconds: int
+
 
 class ConfigManager:
     def __init__(self):
@@ -61,6 +67,7 @@ class ConfigManager:
         """Load configuration from the config file"""
         try:
             from src.config.config_handler import get_config
+
             config_data = get_config()
 
             # Load agent configurations from runners array
@@ -76,25 +83,31 @@ class ConfigManager:
                 try:
                     runner_type = RunnerType(runner_str)
                 except ValueError:
-                    logger.error(f"Invalid runner type '{runner_str}' for runner {i}. Must be one of: {[r.value for r in RunnerType]}")
+                    logger.error(
+                        f"Invalid runner type '{runner_str}' for runner {i}. Must be one of: {[r.value for r in RunnerType]}"
+                    )
                     continue
 
-                name = f"{runner_str}_{i}"  # Generate a unique name
+                name = f"{runner_str}"  # Generate a unique name
                 runtime = AgentRuntime(
                     runner=runner_type,
                     is_main=runner_data["isMain"],
                     tools=runner_data.get("tools", []),
                     api_key=runner_data.get("apiKey"),
-                    model=runner_data.get("model")
+                    model=runner_data.get("model"),
                 )
                 self._agent_configs[name] = runtime
 
             # Load runtime config if present
             runtime_data = config_data.get("runtime")
-            if runtime_data and "maxGlobalChildren" in runtime_data and "defaultTimeoutSeconds" in runtime_data:
+            if (
+                runtime_data
+                and "maxGlobalChildren" in runtime_data
+                and "defaultTimeoutSeconds" in runtime_data
+            ):
                 self._runtime = RuntimeConfig(
                     max_global_children=runtime_data["maxGlobalChildren"],
-                    default_timeout_seconds=runtime_data["defaultTimeoutSeconds"]
+                    default_timeout_seconds=runtime_data["defaultTimeoutSeconds"],
                 )
 
             logger.info("Configuration loaded successfully")
@@ -102,6 +115,7 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Error loading configuration: {str(e)}")
             raise  # Re-raise the exception as we don't want to silently use defaults
+
 
 @lru_cache(maxsize=1)
 def get_config_manager() -> ConfigManager:

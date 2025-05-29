@@ -21,10 +21,12 @@ replicator_tools_server = FastMCP("ReplicatorToolsServer")
 
 
 @replicator_tools_server.tool()
-async def create_child_agent(instruction: str) -> str:
+async def create_child_agent(child_type: str, child_name: str, instruction: str) -> str:
     """Creates a child agent if one doesn't exist yet
 
     Args:
+        child_type: The type of the child agent to create (must match a name in the config)
+        child_name: The name of the child agent. (must be referenced verbatin in further calls to converse with the child)
         instruction: The base instruction/system prompt for the child agent
 
     Returns:
@@ -36,21 +38,29 @@ async def create_child_agent(instruction: str) -> str:
         ChildAgentOperationError: If there's an error creating the child process
     """
     logger.info(
-        "Received request to create child agent with instruction: %s", instruction
+        "Received request to create child agent with name: %s and instruction: %s",
+        child_type,
+        instruction,
     )
 
     try:
         # Get the global replica manager
         replica_manager = get_replica_manager()
 
-        # Generate a unique name for this agent
-        agent_name = f"agent_{len(replica_manager.children) + 1}"
+        # Validate that the agent name exists in the config
+        from src.config.config_manager import get_config_manager
+
+        config_manager = get_config_manager()
+        if child_type not in config_manager.agents:
+            raise ValueError(f"Agent name '{child_type}' not found in config")
 
         # Create the child process through the replica manager
-        logger.info("Creating child agent with name: %s", agent_name)
-        replica_manager.create_child(agent_name, instruction)
+        logger.info("Creating child agent of type: %s", child_type)
+        replica_manager.create_child(
+            name=child_name, child_type=child_type, instruction=instruction
+        )
 
-        success_msg = f"Successfully created child agent '{agent_name}' with instruction: {instruction}"
+        success_msg = f"Successfully created child agent '{child_type}' with instruction: {instruction}"
         logger.info(success_msg)
         return success_msg
 
@@ -185,7 +195,9 @@ async def get_available_child_types() -> List[str]:
 
     try:
         config_manager = get_config_manager()
-        available_runners = [agent.runtime.runner.value for agent in config_manager.agents.values()]
+        available_runners = [
+            agent.runtime.runner.value for agent in config_manager.agents.values()
+        ]
         return available_runners
     except Exception as e:
         error_msg = f"Failed to list available child agent types: {str(e)}"

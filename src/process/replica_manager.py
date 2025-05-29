@@ -12,11 +12,13 @@ from src.process.exceptions import (
     ChildAgentOperationError,
 )
 import logging
+from src.config.config_manager import RunnerType
 
 logger = setup_logger(__name__, logging.INFO)
 
 # Global configuration
 DEFAULT_MAX_CHILDREN: int = 1
+
 
 class ReplicaManager:
     def __init__(self, max_children: int = 1):
@@ -29,11 +31,12 @@ class ReplicaManager:
         self.children: Dict[str, AgentProcess] = {}
         logger.info("Initialized ReplicaManager with max_children=%d", max_children)
 
-    def create_child(self, name: str, instruction: str) -> None:
+    def create_child(self, name: str, child_type: RunnerType, instruction: str) -> None:
         """Create a new child agent process
 
         Args:
-            name: Unique identifier for the child
+            name: The name of the child agent
+            child_type: The type of the runner to use for the child agent
             instruction: The instruction/system prompt for the child agent
 
         Raises:
@@ -41,7 +44,7 @@ class ReplicaManager:
             ChildAgentExistsError: If a child with the given name already exists
             ChildAgentOperationError: If there's an error creating the child process
         """
-        logger.info("Attempting to create child agent '%s'", name)
+        logger.info("Attempting to create child agent '%s'", child_type)
 
         if len(self.children) >= self.max_children:
             logger.warning(
@@ -56,8 +59,10 @@ class ReplicaManager:
             raise ChildAgentExistsError(name)
 
         try:
-            logger.info("Creating new AgentProcess for child '%s'", name)
-            process = AgentProcess(name=name, instruction=instruction)
+            logger.info("Creating new AgentProcess for child '%s'", child_type)
+            process = AgentProcess(
+                name=name, instruction=instruction, child_type=child_type
+            )
             self.children[name] = process
             logger.info("Successfully created child agent '%s'", name)
         except Exception as e:

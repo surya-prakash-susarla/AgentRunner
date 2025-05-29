@@ -1,7 +1,8 @@
 from typing import Optional
 from src.runner.agent_runner import AgentRunner
+from src.config.config_manager import RunnerType
 
-def generate_runner(name: str, instruction: str) -> Optional[AgentRunner]:
+def generate_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]:
     """Generate an appropriate runner instance based on configuration.
     
     Args:
@@ -11,5 +12,8 @@ def generate_runner(name: str, instruction: str) -> Optional[AgentRunner]:
     Returns:
         An instance of AgentRunner or None if generation fails
     """
-    # TODO: Implement runner generation based on config
-    pass
+    if type == RunnerType.GEMINI:
+        from src.runner.gemini_runner import GeminiRunner
+        return GeminiRunner(instruction=instruction)
+    else:
+        return None

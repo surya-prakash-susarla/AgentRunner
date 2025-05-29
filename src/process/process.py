@@ -8,25 +8,32 @@ import logging
 import os
 
 
+from src.config.config_manager import RunnerType
+from src.runner.runner_generator import generate_runner
+
+
 class AgentProcess:
-    def __init__(self, name: str, instruction: str):
+    def __init__(self, name: str, instruction: str, child_type: RunnerType):
         self.name = name
         self.input_q = Queue()
         self.output_q = Queue()
         self.instruction = instruction
+        self.child_type = child_type
         self.logger = setup_logger(__name__, logging.INFO)
         self.logger.info("Initializing agent process %s", name)
 
         # Launch the process
         self.proc = Process(
             target=self._run_agent,
-            args=(self.input_q, self.output_q, self.instruction),
+            args=(self.input_q, self.output_q, self.child_type, self.instruction),
             daemon=True,
         )
         self.proc.start()
 
     @staticmethod
-    def _run_agent(input_q: Queue, output_q: Queue, instruction: str):
+    def _run_agent(
+        input_q: Queue, output_q: Queue, child_type: RunnerType, instruction: str
+    ):
         """Run loop for the child agent."""
 
         proc = current_process()
@@ -35,13 +42,16 @@ class AgentProcess:
 
         runner = None
         try:
+            # TODO: Replace by creating an actual runner here.
             # Create runner inside the child process
-            runner = GeminiRunner(instruction=instruction)
+            runner = generate_runner(type=child_type, instruction=instruction)
 
             while True:
                 query = input_q.get()
                 if query == "__EXIT__":
-                    logger.info("Received exit signal. Shutting down process %d", os.getpid())
+                    logger.info(
+                        "Received exit signal. Shutting down process %d", os.getpid()
+                    )
                     break
 
                 try:
@@ -49,12 +59,12 @@ class AgentProcess:
                 except Exception as e:
                     logger.error("Error processing query: %s", str(e))
                     response = f"[Agent Error]: {str(e)}"
-                    
+
                 try:
                     output_q.put(response)
                 except Exception as e:
                     logger.error("Error sending response: %s", str(e))
-                    
+
         except Exception as e:
             logger.error("Fatal error in agent process: %s", str(e))
             try:
@@ -68,7 +78,6 @@ class AgentProcess:
                     logger.info("Runner cleanup completed")
                 except Exception as e:
                     logger.error("Error during runner cleanup: %s", str(e))
-
 
     def ask(self, message: str, timeout: Optional[float] = None) -> str:
         """Send message to the agent and get the response."""
