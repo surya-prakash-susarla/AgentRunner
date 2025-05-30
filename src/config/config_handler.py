@@ -25,7 +25,7 @@ DEFAULT_CONFIG = {
         "maxGlobalChildren": 100,
         "defaultTimeoutSeconds": 60
     },
-    "toolServers": {}
+    "mcpServers": {}
 }
 
 def ensure_config_exists():

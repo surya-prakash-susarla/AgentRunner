@@ -2,14 +2,41 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Dict, List, Optional
 import json
-import os
 
 from src.utils.logging_config import setup_logger
+from enum import Enum
 import logging
 
 logger = setup_logger(__name__, logging.INFO)
 
-from enum import Enum
+@dataclass
+class MCPServerConfig:
+    command: str
+    args: List[str]
+
+    def to_dict(self):
+      return {
+        "command": self.command,
+        "args": self.args
+      }
+
+@dataclass
+class MCPConfig:
+    mcpServers: Dict[str, MCPServerConfig] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> 'MCPConfig':
+        servers = {
+            name: MCPServerConfig(**spec)
+            for name, spec in data.get("mcpServers", {}).items()
+        }
+        return cls(mcpServers=servers)
+
+    def get_server(self, name: str) -> MCPServerConfig:
+        return self.mcpServers[name]
+
+    def list_servers(self) -> List[str]:
+        return list(self.mcpServers.keys())
 
 
 class RunnerType(Enum):
@@ -40,6 +67,7 @@ class ConfigManager:
         """Initialize configuration manager and load config immediately"""
         self._agent_configs: Dict[str, AgentRuntime] = {}
         self._runtime: Optional[RuntimeConfig] = None
+        self._mcp_config: MCPConfig = None
         self._load_config()
 
     @property
@@ -62,6 +90,10 @@ class ConfigManager:
     def get_agent(self, name: str) -> Optional[AgentRuntime]:
         """Get an agent's configuration"""
         return self._agent_configs.get(name)
+    
+    def get_mcp_config(self) -> Optional[MCPConfig]:
+        """Get MCP configuration"""
+        return self._mcp_config
 
     def _load_config(self):
         """Load configuration from the config file"""
@@ -69,6 +101,9 @@ class ConfigManager:
             from src.config.config_handler import get_config
 
             config_data = get_config()
+
+            if config_data["mcpServers"] != None:
+              self._mcp_config = MCPConfig.from_dict(config_data)
 
             # Load agent configurations from runners array
             runners_data = config_data.get("runners", [])

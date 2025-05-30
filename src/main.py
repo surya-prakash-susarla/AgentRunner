@@ -15,6 +15,7 @@ from src.tools.replicator_tools import replicator_tools_server
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
 from src.config.config_handler import edit_config, get_config
+from src.tools.mcp_master import get_mcp_master
 
 # Set up logging for the main module
 logger = setup_logger(__name__, logging.INFO)
@@ -36,9 +37,16 @@ def get_sample_client():
     return Client(tool_server)
 
 
+def initialize():
+    # Initialize the config files and config file handler.
+    get_config()
+
+    # Initialize mcp tool handler
+    get_mcp_master()
+    
+
 @app.command()
 def chat():
-    get_config()
     """Start an interactive chat session with an LLM agent"""
     runner = None
     try:
@@ -89,4 +97,5 @@ def config():
 
 def main():
     load_dotenv()
+    initialize()
     app()
