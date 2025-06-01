@@ -16,7 +16,7 @@ class AgentProcess:
         self.output_q = Queue()
         self._input_config = input_config
         self.logger = setup_logger(__name__, logging.INFO)
-        self.logger.info("Initializing agent process %s", self.name)
+        self.logger.info("Initializing agent process %s", input_config.name)
 
         # Launch the process
         self.proc = Process(
@@ -27,9 +27,7 @@ class AgentProcess:
         self.proc.start()
 
     @staticmethod
-    def _run_agent(
-        input_q: Queue, output_q: Queue, input_config: AgentProcessInput
-    ):
+    def _run_agent(input_q: Queue, output_q: Queue, input_config: AgentProcessInput):
         """Run loop for the child agent."""
 
         proc = current_process()
@@ -91,20 +89,27 @@ class AgentProcess:
         self.input_q.put(message)
         response = self.output_q.get(timeout=timeout)
         self.logger.debug(
-            "Received response from process %s (PID: %d)", self.name, self.proc.pid
+            "Received response from process %s (PID: %d)",
+            self._input_config.name,
+            self.proc.pid,
         )
         return response
 
     def kill(self):
         """Stop the agent process."""
-        self.logger.info("Killing agent process %s (PID: %d)", self.name, self.proc.pid)
+        self.logger.info(
+            "Killing agent process %s (PID: %d)", self._input_config.name, self.proc.pid
+        )
         self.input_q.put("__EXIT__")
         self.proc.join()
-        self.logger.info("Agent process %s terminated", self.name)
+        self.logger.info("Agent process %s terminated", self._input_config.name)
 
     def is_alive(self) -> bool:
         is_alive = self.proc.is_alive()
         self.logger.debug(
-            "Process %s (PID: %d) alive status: %s", self.name, self.proc.pid, is_alive
+            "Process %s (PID: %d) alive status: %s",
+            self._input_config.name,
+            self.proc.pid,
+            is_alive,
         )
         return is_alive

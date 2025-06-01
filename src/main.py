@@ -1,16 +1,13 @@
 import asyncio
 import logging
-import sys
-from typing import Optional
 
 import typer
 from dotenv import load_dotenv
 from fastmcp import Client, FastMCP
-from rich import print
 from rich.console import Console
 
 from src.runner.gemini_runner import GeminiRunner
-from dev_testing.server import echo_mcp_server
+from src.dev_testing.server import echo_mcp_server
 from src.tools.replicator_tools import replicator_tools_server
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
