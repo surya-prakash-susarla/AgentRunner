@@ -52,3 +52,12 @@ class ChildAgentOperationError(Exception):
         self.error = error
         self.message = f"Error during {operation} on child agent '{name}': {error}"
         super().__init__(self.message)
+
+
+class UnknownToolError(Exception):
+    """Exception raised when trying to use a tool that is not in the tool mapping."""
+
+    def __init__(self, tool_name: str):
+        self.tool_name = tool_name
+        self.message = f"Unknown tool: '{tool_name}' not found in any registered MCP servers"
+        super().__init__(self.message)
