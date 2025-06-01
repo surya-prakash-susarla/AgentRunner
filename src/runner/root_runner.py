@@ -91,27 +91,23 @@ def create_root_runner() -> Optional[AgentRunner]:
 
 def _get_client_with_replicator_tools(client: Client) -> Client:
     """Add replicator tools to an existing MCP client.
-    
+
     This ensures the client has access to tools needed for agent replication and management.
-    
+
     Args:
         client: The existing MCP client to enhance
-        
+
     Returns:
         A new client that has both the original tools and replicator tools
     """
     # Create a new server instance for the enhanced client
     tool_server = FastMCP("enhanced_server")
-    
-    # Get tools from the original session and register them directly
-    for tool in client.session.tools:
-        asyncio.run(tool_server.register_tool(tool))
-    
+
+    all_tool_proxy = FastMCP.as_proxy(client)
+
     # Add the replicator and echo tools
+    asyncio.run(tool_server.import_server("all_tools", all_tool_proxy))
     asyncio.run(tool_server.import_server("replicator_tools", replicator_tools_server))
     asyncio.run(tool_server.import_server("echo_tools", echo_mcp_server))
-    
+
     return Client(tool_server)
-
-
-
