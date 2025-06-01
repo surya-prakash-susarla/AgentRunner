@@ -7,6 +7,7 @@ from src.config.config_manager import RunnerType, get_config_manager
 from src.process.agent_process_input import AgentProcessInput
 from src.tools.mcp_master import get_mcp_master
 from src.tools.replicator_tools import replicator_tools_server
+from src.dev_testing.server import echo_mcp_server
 from fastmcp import Client, FastMCP
 
 
@@ -90,8 +91,9 @@ def _get_client_with_replicator_tools(client: Client) -> Client:
     for tool in client.session.tools:
         asyncio.run(tool_server.register_tool(tool))
     
-    # Add the replicator tools
+    # Add the replicator and echo tools
     asyncio.run(tool_server.import_server("replicator_tools", replicator_tools_server))
+    asyncio.run(tool_server.import_server("echo_tools", echo_mcp_server))
     
     return Client(tool_server)
 

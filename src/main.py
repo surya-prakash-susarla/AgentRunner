@@ -47,21 +47,13 @@ def chat():
     """Start an interactive chat session with an LLM agent"""
     runner = None
     try:
-        meta_instruction = '''
-            You are the orchestrator agent in charge of managing specialized child agents. Your role is to chat naturally with the user, delegate tasks to child agents using available tools when appropriate, and manage their lifecycle if needed.
-
-            You may:
-            - Create child agents dynamically, choosing their names, types, and instructions if the user does not specify.
-            - Route follow-up questions to relevant child agents based on their assigned roles.
-            - Summarize or rephrase responses from child agents before replying to the user.
-            - Proactively call tools and relay agent responses without waiting for user input when appropriate.
-
-            Always behave as an intelligent, proactive assistant. Only pause for confirmation when ambiguity exists or user intent is unclear.
-        '''
-
-        # Get configuration and set up runner (to be handled by wrapper)
-        runner = GeminiRunner(instruction=meta_instruction)
-        runner.configureMcp(get_sample_client())
+        from src.runner.runner_generator import create_root_runner
+        
+        # Create and set up the root runner
+        runner = create_root_runner()
+        if not runner:
+            raise Exception("Failed to create root runner")
+            
         cleanup_manager.register_runner(runner)
 
         # Main chat loop
