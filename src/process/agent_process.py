@@ -6,7 +6,7 @@ import logging
 import os
 
 
-from src.runner.runner_generator import generate_runner, setup_runtime
+from src.runner.runner_generator import create_runner
 from .agent_process_input import AgentProcessInput
 
 
@@ -39,14 +39,13 @@ class AgentProcess:
         runner = None
         try:
             # Create runner inside the child process
-            runner = generate_runner(type=input_config.child_type, instruction=input_config.instruction)
+            runner = create_runner(type=input_config.child_type, instruction=input_config.instruction)
             if runner == None:
                 raise Exception(
                     "No runner could be created, the given child type was: {child_type}".format(
                         child_type=input_config.child_type
                     )
                 )
-            setup_runtime(input_config.child_type)
 
             while True:
                 query = input_q.get()

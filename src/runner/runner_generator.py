@@ -5,27 +5,21 @@ from src.runner.agent_runner import AgentRunner
 from src.config.config_manager import RunnerType, get_config_manager
 
 
-def generate_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]:
-    """Generate an appropriate runner instance based on configuration.
+def create_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]:
+    """Create an appropriate runner instance and set up its runtime environment.
 
     Args:
-        name: Name of the agent/runner to generate
+        type: Type of the runner to create (e.g. GEMINI)
         instruction: Initial instruction/system prompt for the runner
 
     Returns:
-        An instance of AgentRunner or None if generation fails
+        An instance of AgentRunner or None if creation fails
     """
-    if type == RunnerType.GEMINI.value:
+    # Set up runtime environment first
+    runtime = get_config_manager().agents[type]
+    
+    if type == RunnerType.GEMINI:
+        os.environ["GOOGLE_API_KEY"] = runtime.api_key
         return GeminiRunner(instruction=instruction)
     else:
         return None
-
-
-def setup_runtime(type: RunnerType):
-    # TODO: This is under the assumption that we can only have on type of any LLM.
-    runtime = get_config_manager().agents[type]
-
-    if type == RunnerType.GEMINI:
-        os.environ["GOOGLE_API_KEY"] = runtime.api_key
-    else:
-        pass
