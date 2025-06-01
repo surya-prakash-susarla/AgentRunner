@@ -1,7 +1,6 @@
 from typing import Optional, Dict
 from functools import lru_cache
-from src.process.process import AgentProcess
-from src.runner.gemini_runner import GeminiRunner
+from src.process.agent_process import AgentProcess
 from src.utils.logging_config import setup_logger
 from src.process.exceptions import (
     MaxChildrenExceededError,
