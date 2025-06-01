@@ -1,8 +1,7 @@
 from multiprocessing import Process, Queue, current_process
-from src.runner.agent_runner import AgentRunner
-from src.runner.gemini_runner import GeminiRunner
 from typing import Optional
 from src.utils.logging_config import setup_logger
+from dataclasses import dataclass
 import asyncio
 import logging
 import os
@@ -10,6 +9,14 @@ import os
 
 from src.config.config_manager import RunnerType
 from src.runner.runner_generator import generate_runner, setup_runtime
+
+
+@dataclass
+class AgentProcessInput:
+    name: str
+    instruction: str
+    child_type: RunnerType
+    tool_names: str
 
 
 class AgentProcess:
