@@ -10,7 +10,7 @@ from src.process.exceptions import (
     ChildAgentOperationError,
 )
 from src.process.replica_manager import get_replica_manager
-from src.runner.gemini_runner import GeminiRunner
+from src.process.agent_process_input import AgentProcessInput
 from src.utils.logging_config import setup_logger
 
 # Set up logging
@@ -56,9 +56,13 @@ async def create_child_agent(child_type: str, child_name: str, instruction: str)
 
         # Create the child process through the replica manager
         logger.info("Creating child agent of type: %s", child_type)
-        replica_manager.create_child(
-            name=child_name, child_type=child_type, instruction=instruction
+        input_config = AgentProcessInput(
+            name=child_name,
+            child_type=child_type,
+            instruction=instruction,
+            tool_names=""  # TODO: Add tool names support
         )
+        replica_manager.create_child(input_config)
 
         success_msg = f"Successfully created child agent '{child_type}' with instruction: {instruction}"
         logger.info(success_msg)

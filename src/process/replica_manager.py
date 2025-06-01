@@ -1,6 +1,7 @@
 from typing import Optional, Dict
 from functools import lru_cache
 from src.process.agent_process import AgentProcess
+from src.process.agent_process_input import AgentProcessInput
 from src.utils.logging_config import setup_logger
 from src.process.exceptions import (
     MaxChildrenExceededError,
@@ -27,43 +28,43 @@ class ReplicaManager:
         self.children: Dict[str, AgentProcess] = {}
         logger.info("Initialized ReplicaManager with max_children=%d", max_children)
 
-    def create_child(self, name: str, child_type: RunnerType, instruction: str) -> None:
+    def create_child(self, input_config: AgentProcessInput) -> None:
         """Create a new child agent process
 
         Args:
-            name: The name of the child agent
-            child_type: The type of the runner to use for the child agent
-            instruction: The instruction/system prompt for the child agent
+            input_config: Configuration for the new agent process including name, type, and instruction
 
         Raises:
             MaxChildrenExceededError: If maximum number of children has been reached
             ChildAgentExistsError: If a child with the given name already exists
             ChildAgentOperationError: If there's an error creating the child process
         """
-        logger.info("Attempting to create child agent '%s'", child_type)
+        logger.info("Attempting to create child agent '%s'", input_config.child_type)
 
         if len(self.children) >= self.max_children:
             logger.warning(
                 "Cannot create child '%s': maximum children limit (%d) reached",
-                name,
+                input_config.name,
                 self.max_children,
             )
             raise MaxChildrenExceededError(self.max_children)
 
-        if name in self.children:
-            logger.warning("Child with name '%s' already exists", name)
-            raise ChildAgentExistsError(name)
+        if input_config.name in self.children:
+            logger.warning("Child with name '%s' already exists", input_config.name)
+            raise ChildAgentExistsError(input_config.name)
 
         try:
-            logger.info("Creating new AgentProcess for child '%s'", child_type)
-            process = AgentProcess(
-                name=name, instruction=instruction, child_type=child_type
+            logger.info(
+                "Creating new AgentProcess for child '%s'", input_config.child_type
             )
-            self.children[name] = process
-            logger.info("Successfully created child agent '%s'", name)
+            process = AgentProcess(input_config=input_config)
+            self.children[input_config.name] = process
+            logger.info("Successfully created child agent '%s'", input_config.name)
         except Exception as e:
-            logger.error("Failed to create child agent '%s': %s", name, str(e))
-            raise ChildAgentOperationError(name, "creation", str(e)) from e
+            logger.error(
+                "Failed to create child agent '%s': %s", input_config.name, str(e)
+            )
+            raise ChildAgentOperationError(input_config.name, "creation", str(e)) from e
 
     def get_child(self, name: str) -> Optional[AgentProcess]:
         """Get a child agent by name

@@ -6,32 +6,29 @@ import logging
 import os
 
 
-from src.config.config_manager import RunnerType
 from src.runner.runner_generator import generate_runner, setup_runtime
 from .agent_process_input import AgentProcessInput
 
 
 class AgentProcess:
-    def __init__(self, name: str, instruction: str, child_type: RunnerType):
-        self.name = name
+    def __init__(self, input_config: AgentProcessInput):
         self.input_q = Queue()
         self.output_q = Queue()
-        self.instruction = instruction
-        self.child_type = child_type
+        self._input_config = input_config
         self.logger = setup_logger(__name__, logging.INFO)
-        self.logger.info("Initializing agent process %s", name)
+        self.logger.info("Initializing agent process %s", self.name)
 
         # Launch the process
         self.proc = Process(
             target=self._run_agent,
-            args=(self.input_q, self.output_q, self.child_type, self.instruction),
+            args=(self.input_q, self.output_q, input_config),
             daemon=True,
         )
         self.proc.start()
 
     @staticmethod
     def _run_agent(
-        input_q: Queue, output_q: Queue, child_type: RunnerType, instruction: str
+        input_q: Queue, output_q: Queue, input_config: AgentProcessInput
     ):
         """Run loop for the child agent."""
 
@@ -41,16 +38,15 @@ class AgentProcess:
 
         runner = None
         try:
-            # TODO: Replace by creating an actual runner here.
             # Create runner inside the child process
-            runner = generate_runner(type=child_type, instruction=instruction)
+            runner = generate_runner(type=input_config.child_type, instruction=input_config.instruction)
             if runner == None:
                 raise Exception(
                     "No runner could be created, the given child type was: {child_type}".format(
-                        child_type=child_type
+                        child_type=input_config.child_type
                     )
                 )
-            setup_runtime(child_type)
+            setup_runtime(input_config.child_type)
 
             while True:
                 query = input_q.get()
