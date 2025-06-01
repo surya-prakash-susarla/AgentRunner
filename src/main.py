@@ -1,14 +1,10 @@
-import asyncio
 import logging
 
 import typer
 from dotenv import load_dotenv
-from fastmcp import Client, FastMCP
 from rich.console import Console
 
-from src.runner.gemini_runner import GeminiRunner
-from src.dev_testing.server import echo_mcp_server
-from src.tools.replicator_tools import replicator_tools_server
+from src.runner.runner_generator import create_root_runner
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
 from src.config.config_handler import edit_config, get_config
@@ -26,14 +22,6 @@ app = typer.Typer(
 
 console = Console()
 
-def get_sample_client():
-    # NOTE: A single client can contain multiple servers.
-    tool_server = FastMCP("main_server")
-    asyncio.run(tool_server.import_server("echo_tools", echo_mcp_server))
-    asyncio.run(tool_server.import_server("replicator_tools", replicator_tools_server))
-    return Client(tool_server)
-
-
 def initialize():
     # Initialize the config files and config file handler.
     get_config()
@@ -47,8 +35,6 @@ def chat():
     """Start an interactive chat session with an LLM agent"""
     runner = None
     try:
-        from src.runner.runner_generator import create_root_runner
-        
         # Create and set up the root runner
         runner = create_root_runner()
         if not runner:
