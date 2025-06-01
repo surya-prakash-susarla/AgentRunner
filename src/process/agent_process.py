@@ -82,7 +82,7 @@ class AgentProcess:
         """Send message to the agent and get the response."""
         self.logger.debug(
             "Sending message to process %s (PID: %d): %s",
-            self.name,
+            self._input_config.name,
             self.proc.pid,
             message,
         )
