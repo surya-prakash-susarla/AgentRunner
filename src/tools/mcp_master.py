@@ -85,6 +85,14 @@ class McpMaster:
             }
         }
 
+    def get_available_tools(self) -> List[str]:
+        """Get a list of all available tool names across all MCP servers.
+
+        Returns:
+            List of all known tool names that can be used with MCP clients
+        """
+        return list(self._tool_mapping.keys())
+
     def _get_server_for_tool(self, tool_name: str) -> str | None:
         """Get the server name that provides the specified tool.
 
