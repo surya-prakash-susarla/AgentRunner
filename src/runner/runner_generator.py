@@ -3,23 +3,32 @@ from typing import Optional
 from src.runner.gemini_runner import GeminiRunner
 from src.runner.agent_runner import AgentRunner
 from src.config.config_manager import RunnerType, get_config_manager
+from src.process.agent_process_input import AgentProcessInput
+from src.tools.mcp_master import get_mcp_master
 
 
-def create_runner(type: RunnerType, instruction: str) -> Optional[AgentRunner]:
+def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
     """Create an appropriate runner instance and set up its runtime environment.
 
     Args:
-        type: Type of the runner to create (e.g. GEMINI)
-        instruction: Initial instruction/system prompt for the runner
+        input_config: Configuration for the agent process containing type, instruction,
+                     tool names, and other settings needed to create and configure the runner
 
     Returns:
         An instance of AgentRunner or None if creation fails
     """
     # Set up runtime environment first
-    runtime = get_config_manager().agents[type]
-    
-    if type == RunnerType.GEMINI:
+    runtime = get_config_manager().agents[input_config.child_type]
+    runner = None
+
+    if input_config.child_type == RunnerType.GEMINI.value:
         os.environ["GOOGLE_API_KEY"] = runtime.api_key
-        return GeminiRunner(instruction=instruction)
-    else:
-        return None
+        runner = GeminiRunner(instruction=input_config.instruction)
+        
+        # Configure MCP tools if any are specified
+        if input_config.tool_names:
+            mcp_master = get_mcp_master()
+            mcp_client = mcp_master.create_client_for_tools(input_config.tool_names)
+            runner.configureMcp(mcp_client)
+
+    return runner

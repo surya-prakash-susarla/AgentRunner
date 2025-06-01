@@ -39,7 +39,7 @@ class AgentProcess:
         runner = None
         try:
             # Create runner inside the child process
-            runner = create_runner(type=input_config.child_type, instruction=input_config.instruction)
+            runner = create_runner(input_config)
             if runner == None:
                 raise Exception(
                     "No runner could be created, the given child type was: {child_type}".format(
