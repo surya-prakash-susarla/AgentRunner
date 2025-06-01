@@ -21,13 +21,19 @@ replicator_tools_server = FastMCP("ReplicatorToolsServer")
 
 
 @replicator_tools_server.tool()
-async def create_child_agent(child_type: str, child_name: str, instruction: str) -> str:
-    """Creates a child agent if one doesn't exist yet
+async def create_child_agent(child_type: str, child_name: str, instruction: str, tool_names: List[str] = None) -> str:
+    """Creates a specialized child agent of a given type with specific tools and instruction.
+
+    This tool creates a child agent that is specialized for a particular task through its instruction
+    and has access to a specific set of tools that are relevant to its purpose. The tool names provided
+    must exactly match the names of tools available to the caller, and should be scoped appropriately
+    to match the instruction being given to the agent.
 
     Args:
         child_type: The type of the child agent to create (must match a name in the config)
-        child_name: The name of the child agent. (must be referenced verbatin in further calls to converse with the child)
+        child_name: The name of the child agent (must be referenced verbatim in further calls to converse with the child)
         instruction: The base instruction/system prompt for the child agent
+        tool_names: List of tool names the child agent should have access to. Tools should be relevant to the instruction. Tool names should match verbatim to the list provided to the caller.
 
     Returns:
         str: A message describing the result of the operation
@@ -56,11 +62,14 @@ async def create_child_agent(child_type: str, child_name: str, instruction: str)
 
         # Create the child process through the replica manager
         logger.info("Creating child agent of type: %s", child_type)
+        # Convert tool_names list to comma-separated string or use empty string if None
+        tools_str = ",".join(tool_names) if tool_names else ""
+        
         input_config = AgentProcessInput(
             name=child_name,
             child_type=child_type,
             instruction=instruction,
-            tool_names=""  # TODO: Add tool names support
+            tool_names=tools_str
         )
         replica_manager.create_child(input_config)
 
