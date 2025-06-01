@@ -4,7 +4,7 @@ import typer
 from dotenv import load_dotenv
 from rich.console import Console
 
-from src.runner.runner_generator import create_root_runner
+from src.runner.root_runner import create_root_runner
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
 from src.config.config_handler import edit_config, get_config

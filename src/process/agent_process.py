@@ -6,7 +6,7 @@ import logging
 import os
 
 
-from src.runner.runner_generator import create_runner
+from src.runner.runner_factory import create_runner
 from .agent_process_input import AgentProcessInput
 
 
