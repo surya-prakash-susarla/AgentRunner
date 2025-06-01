@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from fastmcp import Client
 
@@ -42,4 +43,13 @@ class AgentRunner(ABC):
     @abstractmethod
     async def cleanup(self) -> None:
         """Cleanup any resources used by the agent."""
+        pass
+
+    @abstractmethod
+    def getMcpClient(self) -> Optional[Client]:
+        """Get the MCP client if one is configured for this agent.
+
+        Returns:
+            The configured MCP client if it exists, None otherwise
+        """
         pass

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Optional
 
 from fastmcp import Client, FastMCP
 from google import genai
@@ -45,6 +46,14 @@ class GeminiRunner(AgentRunner):
         """
         self.logger.debug("Configuring MCP client")
         self._mcp_client = client
+
+    def getMcpClient(self) -> Optional[Client]:
+        """Get the MCP client if one is configured for this agent.
+
+        Returns:
+            The configured MCP client if it exists, None otherwise
+        """
+        return self._mcp_client
 
     async def getResponseAsync(self, query_string: str):
         self.logger.debug("Processing query: %s", query_string)
