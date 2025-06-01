@@ -62,14 +62,14 @@ async def create_child_agent(child_type: str, child_name: str, instruction: str,
 
         # Create the child process through the replica manager
         logger.info("Creating child agent of type: %s", child_type)
-        # Convert tool_names list to comma-separated string or use empty string if None
-        tools_str = ",".join(tool_names) if tool_names else ""
+        # Convert None to empty list for tool_names
+        tools_list = tool_names if tool_names else []
         
         input_config = AgentProcessInput(
             name=child_name,
             child_type=child_type,
             instruction=instruction,
-            tool_names=tools_str
+            tool_names=tools_list
         )
         replica_manager.create_child(input_config)
 
