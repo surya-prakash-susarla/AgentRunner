@@ -38,10 +38,13 @@ class AgentProcessInput:
             mcp_master = get_mcp_master()
             available_tools = mcp_master.get_available_tools()
 
-            # Check each requested tool exists in MCP master
-            for tool in self.tool_names:
-                if tool not in available_tools:
-                    errors.append(f"Tool '{tool}' is not available in any MCP server. Available tools: {available_tools}")
+            # Collect all missing tools
+            missing_tools = [tool for tool in self.tool_names if tool not in available_tools]
+            if missing_tools:
+                errors.append(
+                    f"The following tools are not available in any MCP server: {missing_tools}\n"
+                    f"Available tools: {available_tools}"
+                )
 
         if errors:
             raise ChildAgentOperationError(
