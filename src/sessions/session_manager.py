@@ -6,7 +6,7 @@ from src.sessions.session import Session
 
 
 class SessionsManager:
-    def __init__(self):
+    def __init__(self) -> None:
         # Initialize dict to hold session id to session object mapping
         self.sessions: Dict[str, Session] = {}
 
@@ -22,12 +22,11 @@ class SessionsManager:
         )
         return session_id
 
-    def getSessionDetails(self, session_id: str) -> Session:
+    def getSessionDetails(self, session_id: str) -> Session | None:
         """Returns the session details for a session object"""
         if session_id in self.sessions:
             return self.sessions[session_id]
-        else:
-            return None
+        return None
 
     def recordUserInteractionInSession(
         self, session_id: str, user_message: str

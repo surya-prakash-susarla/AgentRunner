@@ -13,7 +13,7 @@ class AgentProcessInput:
     child_type: RunnerType
     tool_names: List[str]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate all input parameters during initialization."""
         errors = []
 

@@ -26,7 +26,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def ensure_config_exists():
+def ensure_config_exists() -> None:
     """Ensure config directory and file exist, create if they don't"""
     try:
         # Create config directory if it doesn't exist
@@ -42,7 +42,7 @@ def ensure_config_exists():
         raise
 
 
-def edit_config():
+def edit_config() -> None:
     """Open the config file in the user's preferred editor"""
     try:
         ensure_config_exists()

@@ -29,6 +29,7 @@ def create_root_runner() -> Optional[AgentRunner]:
     """
     config_manager = get_config_manager()
     main_agent = None
+    main_type: RunnerType | None = None
 
     # Find the agent marked as main in config
     for agent_type, runtime in config_manager.agents.items():
@@ -103,7 +104,7 @@ def _get_client_with_replicator_tools(client: Client) -> Client:
         A new client that has both the original tools and replicator tools
     """
     # Create a new server instance for the enhanced client
-    tool_server = FastMCP("enhanced_server")
+    tool_server: FastMCP = FastMCP("enhanced_server")
 
     all_tool_proxy = FastMCP.as_proxy(client)
 
