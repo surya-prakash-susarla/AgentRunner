@@ -1,8 +1,9 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from fastmcp import Client, FastMCP
 
+from src.config.config_manager import RunnerType
 from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import (
     ChildAgentNotFoundError,
@@ -22,9 +23,12 @@ replicator_tools_server: FastMCP = FastMCP("ReplicatorToolsServer")
 
 @replicator_tools_server.tool()
 async def create_child_agent(
-    child_type: str, child_name: str, instruction: str, tool_names: List[str]
+    child_type: str, 
+    child_name: str, 
+    instruction: str,
+    tool_names: Optional[List[str]] = None
 ) -> str:
-    """Creates a specialized child agent of a given type with specific tools and instruction.
+    """Create a new child agent with the specified configuration.
 
     This tool creates a child agent that is specialized for a particular task through its instruction
     and has access to a specific set of tools that are relevant to its purpose. The tool names provided
@@ -67,9 +71,14 @@ async def create_child_agent(
         # Convert None to empty list for tool_names
         tools_list = tool_names if tool_names else []
 
+        try:
+            runner_type = RunnerType[child_type.upper()]
+        except KeyError:
+            raise ValueError(f"Invalid runner type: {child_type}. Must be one of {[t.name for t in RunnerType]}")
+
         input_config = AgentProcessInput(
             name=child_name,
-            child_type=child_type,
+            child_type=runner_type,
             instruction=instruction,
             tool_names=tools_list,
         )

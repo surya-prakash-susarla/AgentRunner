@@ -6,7 +6,7 @@ from src.dev_testing.server import echo_mcp_server
 
 
 def test_server() -> None:
-    async def list_tools():
+    async def list_tools() -> list:
         async with client:
             result = await client.list_tools()
             return result

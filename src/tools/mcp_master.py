@@ -78,13 +78,13 @@ class McpMaster:
 
         Returns:
             Dictionary containing the MCP server configuration
-        """
+        """            
+        mcp_config = get_config_manager().get_mcp_config()
+        if mcp_config is None:
+            raise ValueError(f"MCP config not found for server {server_name}")
         return {
             "mcpServers": {
-                server_name: get_config_manager()
-                .get_mcp_config()
-                .get_server(server_name)
-                .to_dict()
+                server_name: mcp_config.get_server(server_name).to_dict()
             }
         }
 

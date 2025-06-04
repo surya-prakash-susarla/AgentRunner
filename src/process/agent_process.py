@@ -3,6 +3,7 @@ import logging
 import os
 from multiprocessing import Process, Queue, current_process
 from typing import Optional
+import queue
 
 from src.runner.runner_factory import create_runner
 from src.utils.logging_config import setup_logger
@@ -81,7 +82,22 @@ class AgentProcess:
                     logger.error("Error during runner cleanup: %s", str(e))
 
     def ask(self, message: str, timeout: Optional[float] = None) -> str:
-        """Send message to the agent and get the response."""
+        """Send message to the agent and get the response.
+
+        Args:
+            message: The message to send to the agent
+            timeout: Optional timeout in seconds
+
+        Returns:
+            str: The response from the agent
+
+        Raises:
+            queue.Empty: If no response is received within timeout
+            RuntimeError: If the process is not alive
+        """
+        if not self.is_alive():
+            raise RuntimeError(f"Process {self._input_config.name} is not alive")
+
         self.logger.debug(
             "Sending message to process %s (PID: %d): %s",
             self._input_config.name,
@@ -89,15 +105,21 @@ class AgentProcess:
             message,
         )
         self.input_q.put(message)
-        response = self.output_q.get(timeout=timeout)
-        self.logger.debug(
-            "Received response from process %s (PID: %d)",
-            self._input_config.name,
-            self.proc.pid,
-        )
-        return response
 
-    def kill(self):
+        try:
+            response = self.output_q.get(timeout=timeout)
+            self.logger.debug(
+                "Received response from process %s (PID: %d)",
+                self._input_config.name,
+                self.proc.pid,
+            )
+            return response
+        except queue.Empty:
+            raise queue.Empty(
+                f"No response received from process {self._input_config.name} within {timeout} seconds"
+            )
+
+    def kill(self) -> None:
         """Stop the agent process."""
         self.logger.info(
             "Killing agent process %s (PID: %d)", self._input_config.name, self.proc.pid

@@ -32,7 +32,7 @@ def initialize() -> None:
 
 
 @app.command()
-def chat():
+def chat() -> None:
     """Start an interactive chat session with an LLM agent"""
     runner = None
     try:

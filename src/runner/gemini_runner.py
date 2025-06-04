@@ -1,6 +1,8 @@
 import asyncio
 import logging
-from typing import Optional
+from typing import List, Optional, cast, Any
+from fastmcp.mcp.types import ClientSession
+from google.generativeai.types import Tool
 
 from fastmcp import Client, FastMCP
 from google import genai
@@ -33,7 +35,7 @@ class GeminiRunner(AgentRunner):
         self._session_id: str = self._session_manager.createSession(instruction)
 
         # Initialize event loop
-        self._event_loop = asyncio.new_event_loop()
+        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
 
         # MCP client will be configured later
         self._mcp_client = None
@@ -57,9 +59,9 @@ class GeminiRunner(AgentRunner):
         """
         return self._mcp_client
 
-    async def getResponseAsync(self, query_string: str) -> str | None:
+    async def getResponseAsync(self, query_string: str) -> Optional[str]:
         self.logger.debug("Processing query: %s", query_string)
-        session = self._session_manager.getSessionDetails(self._session_id)
+        session = self._session_manager.getSession(self._session_id)
         if session is None:
             self.logger.error("Session not found: %s", self._session_id)
             return None
@@ -78,8 +80,7 @@ class GeminiRunner(AgentRunner):
 
         if self._mcp_client:
             async with self._mcp_client:
-                from typing import Sequence
-                tools: Sequence[Client.session] = [self._mcp_client.session]
+                tools: List[Tool] = [cast(Tool, self._mcp_client.session)]
                 response = await self.client.aio.models.generate_content(
                     model=self.model,
                     contents=prompt,
@@ -105,8 +106,11 @@ class GeminiRunner(AgentRunner):
             )
         return response_txt
 
-    def getResponse(self, query: str) -> str | None:
-        return self._event_loop.run_until_complete(self.getResponseAsync(query))
+    def getResponse(self, query: str) -> str:
+        result = self._event_loop.run_until_complete(self.getResponseAsync(query))
+        if result is None:
+            raise RuntimeError("Failed to get response from model")
+        return result
 
     async def cleanup(self) -> None:
         """Cleanup event loop"""

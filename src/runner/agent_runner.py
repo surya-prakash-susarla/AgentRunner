@@ -8,7 +8,7 @@ from fastmcp import Client
 
 class AgentRunner(ABC):
     @abstractmethod
-    def getResponseAsync(self, query_string: str):
+    def getResponseAsync(self, query_string: str) -> str:
         """Get a response from the agent asynchronously.
 
         Args:
