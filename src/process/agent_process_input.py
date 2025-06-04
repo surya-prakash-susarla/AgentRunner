@@ -8,6 +8,13 @@ from src.process.exceptions import ChildAgentOperationError
 
 @dataclass
 class AgentProcessInput:
+    """Configuration input for creating a new agent process.
+
+    This class encapsulates all the necessary configuration parameters needed
+    to create and initialize a new agent process, including its name, type,
+    instruction set, and tool access permissions.
+    """
+
     name: str
     instruction: str
     child_type: RunnerType
