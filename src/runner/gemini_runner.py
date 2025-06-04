@@ -13,6 +13,7 @@ from src.utils.logging_config import setup_logger
 
 class GeminiRunner(AgentRunner):
     """Runner implementation for Google's Gemini LLM model."""
+
     def __init__(
         self,
         instruction: str,
@@ -40,6 +41,7 @@ class GeminiRunner(AgentRunner):
 
         Args:
             client: The configured MCP client to use
+
         """
         self.logger.debug("Configuring MCP client")
         self._mcp_client = client
@@ -49,6 +51,7 @@ class GeminiRunner(AgentRunner):
 
         Returns:
             The configured MCP client if it exists, None otherwise
+
         """
         return self._mcp_client
 
@@ -72,6 +75,7 @@ class GeminiRunner(AgentRunner):
 
         Raises:
             RuntimeError: If there's an error getting the response or if response is empty
+
         """
 
         async def _get_response() -> str:

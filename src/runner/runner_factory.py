@@ -17,6 +17,7 @@ def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
 
     Returns:
         An instance of AgentRunner or None if creation fails
+
     """
     # Set up runtime environment first
     if not isinstance(input_config.child_type, str):

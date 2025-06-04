@@ -22,6 +22,7 @@ class ProcessCleanup:
 
         Args:
             runner: The main GeminiRunner instance
+
         """
         self._runner = runner
         if not self._registered:

@@ -5,7 +5,7 @@ from typing import Dict, List
 
 from fastmcp import Client
 
-from src.config.config_manager import MCPConfig, MCPServerConfig, get_config_manager
+from src.config.config_manager import MCPConfig, get_config_manager
 from src.process.exceptions import UnknownToolError
 from src.utils.logging_config import setup_logger
 
@@ -24,6 +24,7 @@ class McpMaster:
 
         Args:
             mcp_config: Configuration object containing MCP server specifications
+
         """
         if mcp_config is None:
             raise ValueError("MCP configuration cannot be None")
@@ -65,6 +66,7 @@ class McpMaster:
 
         Returns:
             List of tool names available on the server
+
         """
         async with Client(server_config) as client:
             tools = await client.list_tools()
@@ -78,6 +80,7 @@ class McpMaster:
 
         Returns:
             Dictionary containing the MCP server configuration
+
         """
         mcp_config = get_config_manager().get_mcp_config()
         if mcp_config is None:
@@ -91,6 +94,7 @@ class McpMaster:
 
         Returns:
             List of all known tool names that can be used with MCP clients
+
         """
         return list(self._tool_mapping.keys())
 
@@ -102,6 +106,7 @@ class McpMaster:
 
         Returns:
             Server name if the tool exists, None otherwise
+
         """
         return (
             self._tool_mapping[tool_name] if tool_name in self._tool_mapping else None
@@ -118,6 +123,7 @@ class McpMaster:
 
         Raises:
             UnknownToolError: If any tool name is not found in the tool mapping
+
         """
         required_servers = set()
         for tool in tools:
@@ -145,6 +151,7 @@ class McpMaster:
 
         Raises:
             UnknownToolError: If any requested tool is not available
+
         """
         # Get all required servers for these tools
         servers = self._get_server_collection_for_tools(tools)
@@ -173,6 +180,7 @@ def get_mcp_master() -> McpMaster:
 
     Note:
         This function is cached, so subsequent calls will return the same instance
+
     """
     mcp_master = McpMaster(get_config_manager().get_mcp_config())
     logger.info(

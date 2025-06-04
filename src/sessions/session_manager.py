@@ -7,6 +7,7 @@ from src.sessions.session import Session
 
 class SessionsManager:
     """Manager for handling chat sessions and their associated state."""
+
     def __init__(self) -> None:
         # Initialize dict to hold session id to session object mapping
         self.sessions: Dict[str, Session] = {}

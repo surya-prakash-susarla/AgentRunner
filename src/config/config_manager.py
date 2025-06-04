@@ -1,4 +1,3 @@
-import json
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
@@ -13,6 +12,7 @@ logger = setup_logger(__name__, logging.INFO)
 @dataclass
 class MCPServerConfig:
     """Configuration for an MCP server with command and arguments."""
+
     command: str
     args: List[str]
 
@@ -21,6 +21,7 @@ class MCPServerConfig:
         
         Returns:
             A dictionary with command and args keys.
+
         """
         return {"command": self.command, "args": self.args}
 
@@ -69,7 +70,7 @@ class RuntimeConfig:
 
 class ConfigManager:
     """Manager for loading and accessing configuration for runners and MCP servers."""
-    
+
     def __init__(self) -> None:
         """Initialize configuration manager and load config immediately."""
         self._agent_configs: Dict[str, AgentRuntime] = {}
@@ -127,7 +128,7 @@ class ConfigManager:
 
             # Load runtime configuration
             self._load_runtime_config(config_data)
-            
+
             logger.info("Configuration loaded successfully")
 
         except Exception as e:
@@ -139,6 +140,7 @@ class ConfigManager:
 
         Args:
             config_data: Raw configuration dictionary.
+
         """
         if config_data.get("mcpServers") is not None:
             self._mcp_config = MCPConfig.from_dict(config_data)
@@ -148,6 +150,7 @@ class ConfigManager:
 
         Args:
             config_data: Raw configuration dictionary.
+
         """
         runtime_raw = config_data.get("runtime")
         if runtime_raw is not None and isinstance(runtime_raw, dict):
@@ -174,6 +177,7 @@ class ConfigManager:
 
         Returns:
             RunnerType if valid, None otherwise.
+
         """
         try:
             return RunnerType(runner_str)
@@ -193,6 +197,7 @@ class ConfigManager:
 
         Returns:
             Tuple of (name, AgentRuntime) if valid, None otherwise.
+
         """
         if not isinstance(runner_raw, dict):
             logger.warning(f"Skipping runner {index}: not a dictionary")
@@ -211,7 +216,7 @@ class ConfigManager:
         is_main = bool(runner_raw["isMain"])
         tools_raw = runner_raw.get("tools", [])
         tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
-        
+
         return name, AgentRuntime(name=name, type=runner_type, is_main=is_main, tools=tools)
 
 

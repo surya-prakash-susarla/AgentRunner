@@ -8,7 +8,7 @@ from fastmcp import Client
 
 class AgentRunner(ABC):
     """Base class for all agent runners that handle interactions with LLM models."""
-    
+
     @abstractmethod
     def get_response_async(self, query_string: str) -> str:
         """Get a response from the agent asynchronously.
@@ -18,6 +18,7 @@ class AgentRunner(ABC):
 
         Returns:
             The agent's response
+
         """
         pass
 
@@ -30,6 +31,7 @@ class AgentRunner(ABC):
 
         Returns:
             The agent's response
+
         """
         pass
 
@@ -39,6 +41,7 @@ class AgentRunner(ABC):
 
         Args:
             client: The configured MCP client to use
+
         """
         pass
 
@@ -53,5 +56,6 @@ class AgentRunner(ABC):
 
         Returns:
             The configured MCP client if it exists, None otherwise
+
         """
         pass

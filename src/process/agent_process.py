@@ -32,7 +32,6 @@ class AgentProcess:
         input_q: Queue, output_q: Queue, input_config: AgentProcessInput
     ) -> None:
         """Run loop for the child agent."""
-
         proc = current_process()
         logger = setup_logger(f"{__name__}.{proc.name}", logging.INFO)
         logger.info("Starting agent process. PID: %d, Name: %s", os.getpid(), proc.name)
@@ -95,6 +94,7 @@ class AgentProcess:
         Raises:
             queue.Empty: If no response is received within timeout
             RuntimeError: If the process is not alive
+
         """
         if not self.is_alive():
             raise RuntimeError(f"Process {self._input_config.name} is not alive")

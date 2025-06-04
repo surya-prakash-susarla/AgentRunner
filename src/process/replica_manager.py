@@ -2,7 +2,7 @@ import logging
 from functools import lru_cache
 from typing import Dict, Optional
 
-from src.config.config_manager import RunnerType, get_config_manager
+from src.config.config_manager import get_config_manager
 from src.process.agent_process import AgentProcess
 from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import (
@@ -24,6 +24,7 @@ class ReplicaManager:
 
         Args:
             max_children: Maximum number of child agents that can be spawned
+
         """
         self.max_children = max_children
         self.children: Dict[str, AgentProcess] = {}
@@ -39,6 +40,7 @@ class ReplicaManager:
             MaxChildrenExceededError: If maximum number of children has been reached
             ChildAgentExistsError: If a child with the given name already exists
             ChildAgentOperationError: If there's an error creating the child process
+
         """
         logger.info("Attempting to create child agent '%s'", input_config.child_type)
 
@@ -75,6 +77,7 @@ class ReplicaManager:
 
         Returns:
             Optional[AgentProcess]: The child agent process if it exists
+
         """
         logger.debug("Attempting to get child agent '%s'", name)
         process = self.children.get(name)
@@ -102,6 +105,7 @@ class ReplicaManager:
             ChildAgentNotRunningError: If the child process is not running
             ChildAgentTimeoutError: If the request times out
             ChildAgentOperationError: If there's an error getting the response
+
         """
         logger.info("Attempting to ask child '%s' question: %s", name, question)
 
@@ -137,6 +141,7 @@ class ReplicaManager:
         Raises:
             ChildAgentNotFoundError: If the specified child does not exist
             ChildAgentOperationError: If there's an error terminating the child process
+
         """
         logger.info("Attempting to kill child agent '%s'", name)
 
@@ -164,6 +169,7 @@ def get_replica_manager() -> ReplicaManager:
 
     Returns:
         ReplicaManager: The global ReplicaManager instance
+
     """
     runtime = get_config_manager().runtime
     if runtime is None:

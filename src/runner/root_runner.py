@@ -1,5 +1,4 @@
 import asyncio
-import os
 from typing import Optional
 
 from fastmcp import Client, FastMCP
@@ -26,6 +25,7 @@ def create_root_runner() -> Optional[AgentRunner]:
 
     Raises:
         Exception: If no main agent is configured or if the main agent's configuration is invalid
+
     """
     config_manager = get_config_manager()
     main_agent = None
@@ -110,6 +110,7 @@ def _get_client_with_replicator_tools(client: Client) -> Client:
 
     Returns:
         A new client that has both the original tools and replicator tools
+
     """
     # Create a new server instance for the enhanced client
     tool_server: FastMCP = FastMCP("enhanced_server")

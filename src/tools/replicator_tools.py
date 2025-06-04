@@ -1,15 +1,12 @@
 import logging
 from typing import List, Optional
 
-from fastmcp import Client, FastMCP
+from fastmcp import FastMCP
 
 from src.config.config_manager import RunnerType
 from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import (
     ChildAgentNotFoundError,
-    ChildAgentNotRunningError,
-    ChildAgentOperationError,
-    ChildAgentTimeoutError,
 )
 from src.process.replica_manager import get_replica_manager
 from src.utils.logging_config import setup_logger
@@ -48,6 +45,7 @@ async def create_child_agent(
         MaxChildrenExceededError: If maximum number of children has been reached
         ChildAgentExistsError: If a child with the given name already exists
         ChildAgentOperationError: If there's an error creating the child process
+
     """
     logger.info(
         "Received request to create child agent with name: %s and instruction: %s",
@@ -113,6 +111,7 @@ async def ask_child_agent(child_name: str, question: str) -> str:
         ChildAgentNotRunningError: If the child agent process is not running
         ChildAgentTimeoutError: If the request times out
         ChildAgentOperationError: If there's an error getting the response
+
     """
     logger.info("Received request to ask child agent '%s': %s", child_name, question)
 
@@ -146,6 +145,7 @@ async def get_current_children() -> str:
 
     Raises:
         ChildAgentOperationError: If there's an error accessing the children
+
     """
     logger.info("Received request to list current child agents")
 
@@ -184,6 +184,7 @@ async def kill_child_agent(child_name: str) -> str:
     Raises:
         ChildAgentNotFoundError: If the specified child agent doesn't exist
         ChildAgentOperationError: If there's an error terminating the process
+
     """
     logger.info("Received request to terminate child agent '%s'", child_name)
 
@@ -215,6 +216,7 @@ async def get_available_child_types() -> List[str]:
 
     Returns:
         List[str]: A list of the available child agent types. These types should be used exactly as returned.
+
     """
     logger.info("Received request to list available child agent types")
     from src.config.config_manager import get_config_manager
