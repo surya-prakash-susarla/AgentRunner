@@ -13,6 +13,13 @@ logger = setup_logger(__name__, logging.INFO)
 
 
 class ProcessCleanup:
+    """Handler for cleaning up agent processes and associated resources.
+
+    Provides functionality to safely terminate and clean up agent processes,
+    ensuring proper shutdown and resource deallocation when agents are no
+    longer needed.
+    """
+
     def __init__(self) -> None:
         self._runner: Optional["AgentRunner"] = None
         self._registered: bool = False

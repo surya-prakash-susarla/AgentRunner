@@ -4,6 +4,11 @@ from fastmcp import Client
 
 
 async def test() -> None:
+    """Run a test configuration of the MCP server setup.
+
+    Creates a basic MCP server configuration and tests the connection
+    by calling an echo tool.
+    """
     config = {
         "mcpServers": {
             "everything": {

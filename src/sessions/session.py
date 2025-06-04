@@ -5,20 +5,24 @@ from typing import List
 
 @dataclass
 class Session:
-    """Represents a conversation session between a user and the system.
+    """A container for managing conversation session data.
 
-    This class maintains the state and history of a conversation, including
-    the base instruction that initialized the session, message history,
-    and timing information.
+    Stores the base instruction, message history, and interaction timing for a
+    conversation session between a user and the system.
     """
 
     base_instruction: str
     user_messages: List[str]
     system_messages: List[str]
-    current_turn: str
     last_interaction_time: datetime
+    current_turn: str  # Indicates whose turn it is: 'user' or 'system'
 
     def __str__(self) -> str:
+        """Return a string representation of the session.
+
+        Returns:
+            A formatted string showing the base instruction and message history.
+        """
         conversation = []
         conversation.append(f"Base Instruction: {self.base_instruction}\n")
         conversation.append(f"Current Turn: {self.current_turn}")
