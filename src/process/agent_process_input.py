@@ -66,3 +66,39 @@ class AgentProcessInput:
                 operation="initialization",
                 error="Invalid agent configuration:\n- " + "\n- ".join(errors),
             )
+
+    def validate(self) -> list[str]:
+        """Validate configuration settings.
+
+        Returns:
+            List of error messages. Empty if configuration is valid.
+        """
+        errors: list[str] = []
+
+        # Get config manager instance
+        config_manager = get_config_manager()
+
+        # Validate runner type
+        if self.child_type not in config_manager.agents:
+            available = list(config_manager.agents.keys())
+            errors.append(
+                f"Invalid runner type '{self.child_type}'. "
+                f"Must be one of: {available}"
+            )
+
+        # Validate tools if specified
+        if self.tool_names:
+            from src.tools.mcp_master import get_mcp_master
+
+            available_tools = set(get_mcp_master().get_available_tools())
+            required_tools = set(self.tool_names)
+            missing_tools = required_tools - available_tools
+
+            # Report any tools that aren't available
+            if missing_tools:
+                errors.append(
+                    f"The following tools are not available: {missing_tools}\n"
+                    f"Available tools: {available_tools}"
+                )
+
+        return errors

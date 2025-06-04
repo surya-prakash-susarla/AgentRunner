@@ -11,7 +11,6 @@ def echo_resource(message: str) -> str:
         message: The message to echo back.
 
     Returns:
-
         The echoed message with a resource prefix.
     """
     return f"Resource echo: {message}"
@@ -25,7 +24,6 @@ def echo_tool(message: str) -> str:
         message: The message to echo back.
 
     Returns:
-
         The echoed message with a tool prefix.
     """
     return f"Tool echo: {message}"
@@ -39,7 +37,6 @@ def echo_prompt(message: str) -> str:
         message: The message to include in the prompt.
 
     Returns:
-
         A formatted prompt message.
     """
     return f"Please process this message: {message}"

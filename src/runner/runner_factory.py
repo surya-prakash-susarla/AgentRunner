@@ -9,14 +9,17 @@ from src.tools.mcp_master import get_mcp_master
 
 
 def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
-    """Create an appropriate runner instance and set up its runtime environment.
+    """Create an agent runner based on configuration.
 
     Args:
-        input_config: Configuration for the agent process containing type, instruction,
-                     tool names, and other settings needed to create and configure the runner
+        input_config: Configuration for the agent process containing:
+            - type
+            - instruction
+            - tool names
+            - other runner-specific settings
 
     Returns:
-        An instance of AgentRunner or None if creation fails
+        A configured AgentRunner instance, or None if creation fails.
 
     """
     # Set up runtime environment first
