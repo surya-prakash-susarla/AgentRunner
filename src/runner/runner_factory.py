@@ -1,26 +1,33 @@
 import os
 from typing import Optional
-from src.runner.agent_runner import AgentRunner
-from src.runner.gemini_runner import GeminiRunner
+
 from src.config.config_manager import RunnerType, get_config_manager
 from src.process.agent_process_input import AgentProcessInput
+from src.runner.agent_runner import AgentRunner
+from src.runner.gemini_runner import GeminiRunner
 from src.tools.mcp_master import get_mcp_master
 
+
 def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
-    """Create an appropriate runner instance and set up its runtime environment.
+    """Create an agent runner based on configuration.
 
     Args:
-        input_config: Configuration for the agent process containing type, instruction,
-                     tool names, and other settings needed to create and configure the runner
+        input_config: Configuration for the agent process containing:
+            - type
+            - instruction
+            - tool names
+            - other runner-specific settings
 
     Returns:
-        An instance of AgentRunner or None if creation fails
+        A configured AgentRunner instance, or None if creation fails.
+
     """
     # Set up runtime environment first
-    runtime = get_config_manager().agents[input_config.child_type]
+    runtime = get_config_manager().agents[input_config.child_type.value]
     runner = None
 
-    if input_config.child_type == RunnerType.GEMINI.value:
+    # Create runner based on type
+    if input_config.child_type == RunnerType.GEMINI:
         os.environ["GOOGLE_API_KEY"] = runtime.api_key
         runner = GeminiRunner(instruction=input_config.instruction)
 
@@ -28,6 +35,6 @@ def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
         if input_config.tool_names:
             mcp_master = get_mcp_master()
             mcp_client = mcp_master.create_client_for_tools(input_config.tool_names)
-            runner.configureMcp(mcp_client)
+            runner.configure_mcp(mcp_client)
 
     return runner

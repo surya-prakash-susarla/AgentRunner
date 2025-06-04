@@ -1,10 +1,18 @@
-from dev_testing.server import echo_mcp_server
-from fastmcp import Client
 import asyncio
+
+from fastmcp import Client
+
+from src.dev_testing.server import echo_mcp_server
 
 
 def test_server() -> None:
-    async def list_tools():
+    """Test the MCP server functionality with basic operations.
+
+    Sets up a test server and verifies basic functionality including
+    tool listing and echo operations.
+    """
+
+    async def list_tools() -> list:
         async with client:
             result = await client.list_tools()
             return result

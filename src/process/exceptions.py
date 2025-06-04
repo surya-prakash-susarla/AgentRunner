@@ -1,23 +1,26 @@
 class MaxChildrenExceededError(Exception):
-    """Exception raised when attempting to create more child agents than allowed."""
+    """Exception raised when maximum number of child agents is reached."""
 
     def __init__(self, max_children: int):
         self.max_children = max_children
-        self.message = f"Cannot create new child agent: Maximum number of children ({max_children}) already reached"
+        self.message = (
+            f"Cannot create new child agent: Maximum number of "
+            f"children ({max_children}) already reached"
+        )
         super().__init__(self.message)
 
 
 class ChildAgentNotFoundError(Exception):
-    """Exception raised when trying to interact with a non-existent child agent."""
+    """Exception raised when referencing a nonexistent child agent."""
 
     def __init__(self, name: str):
         self.name = name
-        self.message = f"Child agent '{name}' not found"
+        self.message = f"Child agent '{name}' does not exist"
         super().__init__(self.message)
 
 
 class ChildAgentExistsError(Exception):
-    """Exception raised when trying to create a child agent with a name that already exists."""
+    """Exception raised when creating a child agent with a duplicate name."""
 
     def __init__(self, name: str):
         self.name = name
@@ -26,7 +29,7 @@ class ChildAgentExistsError(Exception):
 
 
 class ChildAgentNotRunningError(Exception):
-    """Exception raised when trying to interact with a child agent that is not running."""
+    """Exception raised when accessing a stopped child agent."""
 
     def __init__(self, name: str):
         self.name = name
@@ -59,5 +62,7 @@ class UnknownToolError(Exception):
 
     def __init__(self, tool_name: str):
         self.tool_name = tool_name
-        self.message = f"Unknown tool: '{tool_name}' not found in any registered MCP servers"
+        self.message = (
+            f"Unknown tool: '{tool_name}' not found in any registered MCP servers"
+        )
         super().__init__(self.message)
