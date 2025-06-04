@@ -5,6 +5,13 @@ from typing import List
 
 @dataclass
 class Session:
+    """Represents a conversation session between a user and the system.
+
+    This class maintains the state and history of a conversation, including
+    the base instruction that initialized the session, message history,
+    and timing information.
+    """
+
     base_instruction: str
     user_messages: List[str]
     system_messages: List[str]
