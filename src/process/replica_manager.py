@@ -20,7 +20,7 @@ logger = setup_logger(__name__, logging.INFO)
 
 class ReplicaManager:
     """Manager for child agent processes and their lifecycle.
-    
+
     Handles creation, communication, and cleanup of child agent processes. Maintains
     a registry of active child agents and enforces process limits.
     """
