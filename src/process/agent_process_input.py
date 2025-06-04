@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 from src.config.config_manager import RunnerType, get_config_manager
 from src.process.exceptions import ChildAgentOperationError

@@ -6,7 +6,6 @@ from fastmcp import FastMCP
 from src.config.config_manager import RunnerType, get_config_manager
 from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import ChildAgentNotFoundError
-from src.process.replica_manager import get_replica_manager
 from src.utils.logging_config import setup_logger
 
 # Set up logging
@@ -37,6 +36,7 @@ async def create_child_agent(
     Raises:
         ValueError: If the agent type or configuration is invalid
         Exception: For other creation failures
+
     """
     logger.info(
         "Received create_child_agent request for %s with instruction: %s",
@@ -48,16 +48,14 @@ async def create_child_agent(
         # Get the global replica manager
         replica_manager = get_replica_manager()
 
-        # Validate that the agent name exists in the config
-        config_manager = get_config_manager()
         try:
             # Convert string to RunnerType enum directly
             runner_type = RunnerType(child_type.lower())
-        except ValueError:
+        except ValueError as err:
             available_types = [t.value for t in RunnerType]
             raise ValueError(
                 f"Invalid runner type: {child_type}. Must be one of {available_types}"
-            )
+            ) from err
 
         input_config = AgentProcessInput(
             name=child_name,

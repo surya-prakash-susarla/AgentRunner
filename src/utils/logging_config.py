@@ -25,18 +25,19 @@ def setup_logger(name: str, level: int | None = None) -> logging.Logger:
     # Only add handler if the logger doesn't already have one
     if not logger.handlers:
         handler = logging.StreamHandler()
-        
+
         # Get format from config if available
         try:
             from src.config.config_manager import get_config_manager
+
             config = get_config_manager()
-            if hasattr(config, 'logging') and hasattr(config.logging, 'format'):
+            if hasattr(config, "logging") and hasattr(config.logging, "format"):
                 format_str = config.logging.format
             else:
                 format_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         except Exception:
             format_str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            
+
         formatter = logging.Formatter(format_str)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -46,14 +47,16 @@ def setup_logger(name: str, level: int | None = None) -> logging.Logger:
         log_level = level
     else:
         import os
-        env_level = os.getenv('LOG_LEVEL', '').upper()
+
+        env_level = os.getenv("LOG_LEVEL", "").upper()
         if env_level and hasattr(logging, env_level):
             log_level = getattr(logging, env_level)
         else:
             try:
                 from src.config.config_manager import get_config_manager
+
                 config = get_config_manager()
-                if hasattr(config, 'logging') and hasattr(config.logging, 'level'):
+                if hasattr(config, "logging") and hasattr(config.logging, "level"):
                     log_level = getattr(logging, config.logging.level.upper())
                 else:
                     log_level = logging.INFO
