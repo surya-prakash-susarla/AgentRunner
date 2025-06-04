@@ -252,6 +252,7 @@ class ConfigManager:
             Tuple of (name, AgentRuntime) if valid, None otherwise.
 
         """
+
         if not isinstance(runner_raw, dict):
             logger.warning(f"Skipping runner {index}: not a dictionary")
             return None
@@ -270,7 +271,7 @@ class ConfigManager:
         tools_raw = runner_raw.get("tools", [])
         tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
 
-        return name, AgentRuntime(runner=runner_type, is_main=is_main, tools=tools)
+        return name, AgentRuntime(runner=runner_type, is_main=is_main, tools=tools, api_key=runner_raw["apiKey"], model=runner_raw["model"])
 
 
 @lru_cache(maxsize=1)
