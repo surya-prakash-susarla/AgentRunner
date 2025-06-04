@@ -3,10 +3,8 @@ import logging
 from typing import Any, List, Optional, cast
 
 from fastmcp import Client, FastMCP
-from fastmcp.mcp.types import ClientSession
 from google import genai
 from google.genai import types
-from google.generativeai.types import Tool
 
 from src.runner.agent_runner import AgentRunner
 from src.sessions.session_manager import SessionsManager
@@ -59,12 +57,13 @@ class GeminiRunner(AgentRunner):
         """
         return self._mcp_client
 
-    async def getResponseAsync(self, query_string: str) -> Optional[str]:
+    async def getResponseAsync(self, query_string: str) -> str:
         self.logger.debug("Processing query: %s", query_string)
-        session = self._session_manager.getSession(self._session_id)
+        session = self._session_manager.getSessionDetails(self._session_id)
         if session is None:
-            self.logger.error("Session not found: %s", self._session_id)
-            return None
+            error_msg = f"Session not found: {self._session_id}"
+            self.logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         self._session_manager.recordUserInteractionInSession(
             self._session_id, query_string
@@ -80,12 +79,12 @@ class GeminiRunner(AgentRunner):
 
         if self._mcp_client:
             async with self._mcp_client:
-                tools: List[Tool] = [cast(Tool, self._mcp_client.session)]
                 response = await self.client.aio.models.generate_content(
                     model=self.model,
                     contents=prompt,
                     config=types.GenerateContentConfig(
-                        system_instruction=session.base_instruction, tools=tools
+                        system_instruction=session.base_instruction, 
+                        tools=[cast(types.Tool, self._mcp_client.session)]
                     ),
                 )
         else:
