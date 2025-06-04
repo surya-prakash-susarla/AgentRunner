@@ -27,7 +27,9 @@ class AgentProcess:
         self.proc.start()
 
     @staticmethod
-    def _run_agent(input_q: Queue, output_q: Queue, input_config: AgentProcessInput) -> None:
+    def _run_agent(
+        input_q: Queue, output_q: Queue, input_config: AgentProcessInput
+    ) -> None:
         """Run loop for the child agent."""
 
         proc = current_process()

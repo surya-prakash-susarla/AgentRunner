@@ -2,7 +2,7 @@ import asyncio
 import atexit
 import logging
 import signal
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from src.utils.logging_config import setup_logger
 
@@ -14,10 +14,10 @@ logger = setup_logger(__name__, logging.INFO)
 
 class ProcessCleanup:
     def __init__(self) -> None:
-        self._runner: Optional['AgentRunner'] = None
+        self._runner: Optional["AgentRunner"] = None
         self._registered: bool = False
 
-    def register_runner(self, runner: 'AgentRunner') -> None:
+    def register_runner(self, runner: "AgentRunner") -> None:
         """Register the main runner instance for cleanup.
 
         Args:
