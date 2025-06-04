@@ -19,7 +19,7 @@ class AgentProcess:
     receive responses through queues.
 
     Args:
-        input_config: Configuration object with details needed to create and run the agent.
+        input_config: Config object with details for creating and running the agent.
     """
 
     def __init__(self, input_config: AgentProcessInput) -> None:
@@ -51,7 +51,10 @@ class AgentProcess:
             # Create runner inside the child process
             runner = create_runner(input_config)
             if runner is None:
-                error_msg = f"No runner could be created for child type: {input_config.child_type}"
+                error_msg = (
+                    f"No runner could be created for child type: "
+                    f"{input_config.child_type}"
+                )
                 raise Exception(error_msg)
 
             while True:
@@ -138,6 +141,7 @@ class AgentProcess:
 
         Returns:
             bool: True if the process is running, False otherwise.
+
         """
         is_alive = self.proc.is_alive()
         self.logger.debug(
