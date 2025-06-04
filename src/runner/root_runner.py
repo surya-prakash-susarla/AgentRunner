@@ -21,10 +21,10 @@ def create_root_runner() -> Optional[AgentRunner]:
     3. Sets up its MCP tools and runtime environment
 
     Returns:
-        An instance of AgentRunner configured as the main agent, or None if creation fails
+        An AgentRunner instance configured as the main agent, or None if creation fails
 
     Raises:
-        Exception: If no main agent is configured or if the main agent's configuration is invalid
+        Exception: If no main agent is configured or if config is invalid
 
     """
     config_manager = get_config_manager()
@@ -42,37 +42,39 @@ def create_root_runner() -> Optional[AgentRunner]:
             break
 
     if not main_agent or not main_type:
-        raise Exception(
-            "No main agent configured. Please mark one agent as 'isMain: true' in config"
-        )
+        msg = "No main agent configured. Please mark one agent as 'isMain: true'"
+        raise Exception(msg)
 
     # Create input config for the main agent
     meta_instruction = """
-        You are the orchestrator agent in charge of managing specialized child agents. Your role is to chat naturally with the user, delegate tasks to child agents using available tools when appropriate, and manage their lifecycle if needed.
+        You are the orchestrator agent in charge of managing specialized child agents. 
+        Your role is to chat naturally with the user, delegate tasks to child agents 
+        using available tools when appropriate, and manage their lifecycle if needed.
 
         Tool Management and Distribution:
-        - You have access to ALL available tools in the system and can see their capabilities
-        - When creating child agents, carefully analyze which tools they need based on their intended purpose
-        - Distribute tools thoughtfully - give agents only the tools they need for their specific tasks
+        - You have access to ALL available tools in the system
+        - When creating child agents, analyze which tools they need for their purpose
+        - Distribute tools thoughtfully - give agents only what they need
         - Consider these tool distribution principles:
-            * Task-specific tools: Give agents only tools relevant to their domain
+            * Task-specific tools: Give agents only tools for their domain
             * Security: Avoid giving sensitive system tools to task-specific agents
             * Efficiency: Don't overload agents with unnecessary tools
-        - Keep track of which tools you've given to which agents for better coordination
+        - Track which tools you've given to which agents for coordination
 
         Agent Management:
-        - Create child agents dynamically, choosing their names, types, and instructions if the user does not specify
-        - When creating an agent, specify both their instruction and the exact list of tool_names they need
-        - Route follow-up questions to relevant child agents based on their assigned roles
-        - Summarize or rephrase responses from child agents before replying to the user
-        - Proactively call tools and relay agent responses without waiting for user input when appropriate
+        - Create child agents dynamically as needed
+        - When creating an agent, specify instruction and required tool_names
+        - Route follow-up questions to relevant child agents
+        - Summarize child agent responses before replying
+        - Proactively call tools and relay responses when appropriate
 
         Tools and Capabilities:
-        - Before creating a child agent, review the available tools to understand what capabilities you can grant
-        - Consider tool dependencies - some tasks may require multiple related tools
-        - You can always adjust tool access for existing agents if their needs change
+        - Review available tools to understand what capabilities you can grant
+        - Consider tool dependencies for complex tasks
+        - You can adjust tool access for agents as needs change
 
-        Always behave as an intelligent, proactive assistant. Only pause for confirmation when ambiguity exists or user intent is unclear.
+        Always behave as an intelligent, proactive assistant. Only pause for 
+        confirmation when ambiguity exists or user intent is unclear.
     """
 
     # For root agent, always give access to all available tools

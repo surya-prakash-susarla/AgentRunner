@@ -43,6 +43,7 @@ async def create_child_agent(
         MaxChildrenExceededError: If max children limit reached
         ChildAgentExistsError: If child name already exists
         ChildAgentOperationError: If creation fails
+
     """
     logger.info(
         "Received request to create child agent with name: %s and instruction: %s",
@@ -112,6 +113,7 @@ async def ask_child_agent(child_name: str, question: str) -> str:
         ChildAgentNotRunningError: If the child agent process is not running
         ChildAgentTimeoutError: If the request times out
         ChildAgentOperationError: If there's an error getting the response
+
     """
     logger.info("Received request to ask child agent '%s': %s", child_name, question)
 
@@ -138,13 +140,16 @@ async def ask_child_agent(child_name: str, question: str) -> str:
 
 @replicator_tools_server.tool()
 async def get_current_children() -> str:
-    """Gets the names of all currently running child agents
+    """List all currently running child agents.
+
+    Gets a list of all active child agents in the system. If no agents are
+    currently running, indicates this in the response.
 
     Returns:
-        str: A message listing all current child agent names, or indicating no children exist
+        A message listing active child agent names or indicating none exist.
 
     Raises:
-        ChildAgentOperationError: If there's an error accessing the children
+        ChildAgentOperationError: If there's an error accessing the children.
 
     """
     logger.info("Received request to list current child agents")
@@ -156,13 +161,17 @@ async def get_current_children() -> str:
         if not replica_manager.children:
             return "No child agents currently exist"
 
-        # Get all child names and their states
+        # Get all child names and format nicely
         child_names = list(replica_manager.children.keys())
         child_list = ", ".join(child_names)
 
-        success_msg = f"Current child agents: {child_list}. Use the exact names when referencing children in future queries."
-        logger.info(success_msg)
-        return success_msg
+        # Build response with guidance on using names
+        msg = (
+            f"Current child agents: {child_list}. "
+            "Use these exact names when referencing children."
+        )
+        logger.info(msg)
+        return msg
 
     except Exception as e:
         error_msg = f"Failed to list child agents: {str(e)}"
@@ -173,17 +182,19 @@ async def get_current_children() -> str:
 
 @replicator_tools_server.tool()
 async def kill_child_agent(child_name: str) -> str:
-    """Terminates a specific child agent process
+    """Terminate a specific child agent process.
+
+    Cleanly shuts down the specified child agent and removes it from the system.
 
     Args:
-        child_name: The name of the child agent to terminate (e.g. 'agent_1')
+        child_name: Name of the child agent to terminate (e.g. 'agent_1').
 
     Returns:
-        str: A message confirming the child agent was terminated
+        A message confirming the child agent was terminated.
 
     Raises:
-        ChildAgentNotFoundError: If the specified child agent doesn't exist
-        ChildAgentOperationError: If there's an error terminating the process
+        ChildAgentNotFoundError: If the specified child agent doesn't exist.
+        ChildAgentOperationError: If there's an error during termination.
 
     """
     logger.info("Received request to terminate child agent '%s'", child_name)
