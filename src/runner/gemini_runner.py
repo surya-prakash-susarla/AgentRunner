@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, List, Optional, Sequence, cast
+from typing import Any, List, Optional, cast
 
 from fastmcp import Client, FastMCP
 from google import genai
@@ -56,7 +56,9 @@ class GeminiRunner(AgentRunner):
 
         Note: This method is not supported in the base class, use getResponse instead.
         """
-        raise NotImplementedError("Use getResponse instead - async methods not supported in base class")
+        raise NotImplementedError(
+            "Use getResponse instead - async methods not supported in base class"
+        )
 
     def getResponse(self, query_string: str) -> str:
         """Get a response from the agent synchronously.
@@ -66,10 +68,11 @@ class GeminiRunner(AgentRunner):
 
         Returns:
             The agent's response
-        
+
         Raises:
             RuntimeError: If there's an error getting the response or if response is empty
         """
+
         async def _get_response() -> str:
             self.logger.debug("Processing query: %s", query_string)
             session = self._session_manager.getSessionDetails(self._session_id)
@@ -92,15 +95,13 @@ class GeminiRunner(AgentRunner):
 
             if self._mcp_client:
                 async with self._mcp_client:
-                    # Using list instead of Sequence for tool type compatibility
-                    tools = [cast(types.Tool, self._mcp_client.session)]
+                    # Use Any type to avoid type conflicts with tools
+                    config = types.GenerateContentConfig(
+                        system_instruction=session.base_instruction,
+                        tools=[cast(Any, self._mcp_client.session)],
+                    )
                     response = await self.client.aio.models.generate_content(
-                        model=self.model,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            system_instruction=session.base_instruction, 
-                            tools=tools
-                        ),
+                        model=self.model, contents=prompt, config=config
                     )
             else:
                 response = await self.client.aio.models.generate_content(
@@ -116,7 +117,7 @@ class GeminiRunner(AgentRunner):
             response_txt = response.text
             if response_txt is None:
                 raise RuntimeError("Received empty response from model")
-                
+
             self._session_manager.recordSystemInteractionInSession(
                 self._session_id, response_txt
             )

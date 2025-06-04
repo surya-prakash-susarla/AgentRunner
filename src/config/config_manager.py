@@ -135,8 +135,14 @@ class ConfigManager:
                 # Type-safe extraction of configuration values
                 is_main = bool(runner_raw["isMain"])
                 tools_raw = runner_raw.get("tools", [])
-                tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
-                api_key = str(runner_raw.get("apiKey")) if runner_raw.get("apiKey") is not None else None
+                tools = (
+                    [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
+                )
+                api_key = (
+                    str(runner_raw.get("apiKey"))
+                    if runner_raw.get("apiKey") is not None
+                    else None
+                )
                 model = str(runner_raw.get("model", "gemini-pro"))
 
                 runtime = AgentRuntime(
@@ -153,7 +159,7 @@ class ConfigManager:
             if runtime_raw is not None and isinstance(runtime_raw, dict):
                 max_children_raw = runtime_raw.get("maxGlobalChildren")
                 timeout_raw = runtime_raw.get("defaultTimeoutSeconds")
-                
+
                 if max_children_raw is not None and timeout_raw is not None:
                     try:
                         max_children = int(max_children_raw)
