@@ -23,10 +23,10 @@ replicator_tools_server: FastMCP = FastMCP("ReplicatorToolsServer")
 
 @replicator_tools_server.tool()
 async def create_child_agent(
-    child_type: str, 
-    child_name: str, 
+    child_type: str,
+    child_name: str,
     instruction: str,
-    tool_names: Optional[List[str]] = None
+    tool_names: Optional[List[str]] = None,
 ) -> str:
     """Create a new child agent with the specified configuration.
 
@@ -74,7 +74,9 @@ async def create_child_agent(
         try:
             runner_type = RunnerType[child_type.upper()]
         except KeyError:
-            raise ValueError(f"Invalid runner type: {child_type}. Must be one of {[t.name for t in RunnerType]}")
+            raise ValueError(
+                f"Invalid runner type: {child_type}. Must be one of {[t.name for t in RunnerType]}"
+            )
 
         input_config = AgentProcessInput(
             name=child_name,
