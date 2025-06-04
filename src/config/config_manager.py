@@ -1,13 +1,14 @@
+import json
+import logging
 from dataclasses import dataclass, field
+from enum import Enum
 from functools import lru_cache
 from typing import Dict, List, Optional
-import json
 
 from src.utils.logging_config import setup_logger
-from enum import Enum
-import logging
 
 logger = setup_logger(__name__, logging.INFO)
+
 
 @dataclass
 class MCPServerConfig:
@@ -15,17 +16,15 @@ class MCPServerConfig:
     args: List[str]
 
     def to_dict(self):
-      return {
-        "command": self.command,
-        "args": self.args
-      }
+        return {"command": self.command, "args": self.args}
+
 
 @dataclass
 class MCPConfig:
     mcpServers: Dict[str, MCPServerConfig] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'MCPConfig':
+    def from_dict(cls, data: Dict) -> "MCPConfig":
         servers = {
             name: MCPServerConfig(**spec)
             for name, spec in data.get("mcpServers", {}).items()
@@ -90,7 +89,7 @@ class ConfigManager:
     def get_agent(self, name: str) -> Optional[AgentRuntime]:
         """Get an agent's configuration"""
         return self._agent_configs.get(name)
-    
+
     def get_mcp_config(self) -> Optional[MCPConfig]:
         """Get MCP configuration"""
         return self._mcp_config
@@ -103,7 +102,7 @@ class ConfigManager:
             config_data = get_config()
 
             if config_data["mcpServers"] != None:
-              self._mcp_config = MCPConfig.from_dict(config_data)
+                self._mcp_config = MCPConfig.from_dict(config_data)
 
             # Load agent configurations from runners array
             runners_data = config_data.get("runners", [])

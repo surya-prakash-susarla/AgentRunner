@@ -1,16 +1,16 @@
 import logging
 from typing import List
 
-from fastmcp import FastMCP, Client
+from fastmcp import Client, FastMCP
 
+from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import (
     ChildAgentNotFoundError,
     ChildAgentNotRunningError,
-    ChildAgentTimeoutError,
     ChildAgentOperationError,
+    ChildAgentTimeoutError,
 )
 from src.process.replica_manager import get_replica_manager
-from src.process.agent_process_input import AgentProcessInput
 from src.utils.logging_config import setup_logger
 
 # Set up logging
@@ -21,7 +21,9 @@ replicator_tools_server = FastMCP("ReplicatorToolsServer")
 
 
 @replicator_tools_server.tool()
-async def create_child_agent(child_type: str, child_name: str, instruction: str, tool_names: List[str] = None) -> str:
+async def create_child_agent(
+    child_type: str, child_name: str, instruction: str, tool_names: List[str] = None
+) -> str:
     """Creates a specialized child agent of a given type with specific tools and instruction.
 
     This tool creates a child agent that is specialized for a particular task through its instruction
@@ -64,12 +66,12 @@ async def create_child_agent(child_type: str, child_name: str, instruction: str,
         logger.info("Creating child agent of type: %s", child_type)
         # Convert None to empty list for tool_names
         tools_list = tool_names if tool_names else []
-        
+
         input_config = AgentProcessInput(
             name=child_name,
             child_type=child_type,
             instruction=instruction,
-            tool_names=tools_list
+            tool_names=tools_list,
         )
         replica_manager.create_child(input_config)
 

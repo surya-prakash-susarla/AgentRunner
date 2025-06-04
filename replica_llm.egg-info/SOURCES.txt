@@ -1,3 +1,5 @@
+README.md
+pyproject.toml
 setup.py
 replica_llm.egg-info/PKG-INFO
 replica_llm.egg-info/SOURCES.txt
@@ -7,9 +9,18 @@ replica_llm.egg-info/requires.txt
 replica_llm.egg-info/top_level.txt
 src/__init__.py
 src/main.py
+src/config/__init__.py
+src/config/config_handler.py
+src/config/config_manager.py
 src/runner/__init__.py
 src/runner/agent_runner.py
 src/runner/gemini_runner.py
+src/runner/root_runner.py
+src/runner/runner_factory.py
 src/sessions/__init__.py
 src/sessions/session.py
 src/sessions/session_manager.py
+tests/__init__.py
+tests/conftest.py
+tests/process/__init__.py
+tests/process/test_agent_process_input.py

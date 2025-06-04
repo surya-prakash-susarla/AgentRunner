@@ -1,12 +1,13 @@
-from src.config.config_manager import get_config_manager
+import asyncio
 import functools
 import logging
 from typing import Dict, List
-from src.utils.logging_config import setup_logger
-from src.config.config_manager import MCPConfig, MCPServerConfig
-from src.process.exceptions import UnknownToolError
+
 from fastmcp import Client
-import asyncio
+
+from src.config.config_manager import MCPConfig, MCPServerConfig, get_config_manager
+from src.process.exceptions import UnknownToolError
+from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__, logging.INFO)
 
@@ -130,35 +131,35 @@ class McpMaster:
 
     def create_client_for_tools(self, tools: list[str]) -> Client:
         """Create an MCP client that has access to all the requested tools.
-        
+
         This method will:
         1. Find all servers needed for the requested tools
         2. Generate a combined MCP configuration including all required servers
         3. Create and return a client with access to all tools
-        
+
         Args:
             tools: List of tool names that the client needs access to
-            
+
         Returns:
             MCP Client configured with all required servers
-            
+
         Raises:
             UnknownToolError: If any requested tool is not available
         """
         # Get all required servers for these tools
         servers = self._get_server_collection_for_tools(tools)
-        
+
         logger.info("Creating client for tools: {tools}".format(tools=tools))
         logger.info("Required servers: {servers}".format(servers=servers))
-        
+
         # Create a combined configuration with all required servers
         combined_config = {"mcpServers": {}}
         for server_name in servers:
             server_config = self._mcp_config.get_server(server_name).to_dict()
             combined_config["mcpServers"][server_name] = server_config
-            
+
         logger.info("Created combined config: {config}".format(config=combined_config))
-        
+
         # Create and return a client with the combined configuration
         return Client(combined_config)
 

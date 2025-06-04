@@ -59,5 +59,7 @@ class UnknownToolError(Exception):
 
     def __init__(self, tool_name: str):
         self.tool_name = tool_name
-        self.message = f"Unknown tool: '{tool_name}' not found in any registered MCP servers"
+        self.message = (
+            f"Unknown tool: '{tool_name}' not found in any registered MCP servers"
+        )
         super().__init__(self.message)

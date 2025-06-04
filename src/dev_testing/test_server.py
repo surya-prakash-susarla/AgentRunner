@@ -1,6 +1,8 @@
-from dev_testing.server import echo_mcp_server
-from fastmcp import Client
 import asyncio
+
+from fastmcp import Client
+
+from src.dev_testing.server import echo_mcp_server
 
 
 def test_server() -> None:

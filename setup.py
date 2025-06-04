@@ -9,7 +9,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     install_requires=[
         "typer[all]>=0.9.0",
         "rich>=13.7.0",
@@ -25,6 +25,7 @@ setup(
     extras_require={
         "dev": [
             "pytest>=7.4.0",
+            "pytest-cov>=4.1.0",  # For coverage reporting
             "black>=24.1.0",
             "isort>=5.13.0",
             "mypy>=1.8.0",

@@ -1,12 +1,12 @@
-from multiprocessing import Process, Queue, current_process
-from typing import Optional
-from src.utils.logging_config import setup_logger
 import asyncio
 import logging
 import os
-
+from multiprocessing import Process, Queue, current_process
+from typing import Optional
 
 from src.runner.runner_factory import create_runner
+from src.utils.logging_config import setup_logger
+
 from .agent_process_input import AgentProcessInput
 
 

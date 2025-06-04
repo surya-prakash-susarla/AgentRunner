@@ -4,11 +4,11 @@ import typer
 from dotenv import load_dotenv
 from rich.console import Console
 
+from src.config.config_handler import edit_config, get_config
 from src.runner.root_runner import create_root_runner
+from src.tools.mcp_master import get_mcp_master
 from src.utils.cleanup import cleanup_manager
 from src.utils.logging_config import setup_logger
-from src.config.config_handler import edit_config, get_config
-from src.tools.mcp_master import get_mcp_master
 
 # Set up logging for the main module
 logger = setup_logger(__name__, logging.INFO)
@@ -17,10 +17,11 @@ logger = setup_logger(__name__, logging.INFO)
 app = typer.Typer(
     name="replica-llm",
     help="A CLI tool for running and managing LLM agents",
-    add_completion=True
+    add_completion=True,
 )
 
 console = Console()
+
 
 def initialize():
     # Initialize the config files and config file handler.
@@ -28,7 +29,7 @@ def initialize():
 
     # Initialize mcp tool handler
     get_mcp_master()
-    
+
 
 @app.command()
 def chat():
@@ -39,11 +40,13 @@ def chat():
         runner = create_root_runner()
         if not runner:
             raise Exception("Failed to create root runner")
-            
+
         cleanup_manager.register_runner(runner)
 
         # Main chat loop
-        console.print("[green]Starting chat session. Type 'exit' or 'quit' to end.[/green]")
+        console.print(
+            "[green]Starting chat session. Type 'exit' or 'quit' to end.[/green]"
+        )
         while True:
             query = console.input("[bold blue]You:[/bold blue] ")
             if query.lower() in ["exit", "quit"]:
@@ -52,7 +55,9 @@ def chat():
             response = runner.getResponse(query)
             console.print(f"[bold green]Assistant:[/bold green] {response}")
     except KeyboardInterrupt:
-        console.print("\n[yellow]Received keyboard interrupt, shutting down...[/yellow]")
+        console.print(
+            "\n[yellow]Received keyboard interrupt, shutting down...[/yellow]"
+        )
     except Exception as e:
         console.print(f"[red]Unexpected error: {str(e)}[/red]")
     finally:
