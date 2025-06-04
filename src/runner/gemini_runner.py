@@ -26,17 +26,11 @@ class GeminiRunner(AgentRunner):
         self.instruction: str = instruction
         self.log_level: int = log_level
         self._mcp_client: Client | None = None
-        self._loop: asyncio.AbstractEventLoop | None = None
+        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
 
         # Initialize session manager immediately
         self._session_manager: SessionsManager = SessionsManager()
         self._session_id: str = self._session_manager.createSession(instruction)
-
-        # Initialize event loop
-        self._event_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-
-        # MCP client will be configured later
-        self._mcp_client = None
 
         self.logger.debug("GeminiRunner initialized with session %s", self._session_id)
 
@@ -57,65 +51,83 @@ class GeminiRunner(AgentRunner):
         """
         return self._mcp_client
 
-    async def getResponseAsync(self, query_string: str) -> str:
-        self.logger.debug("Processing query: %s", query_string)
-        session = self._session_manager.getSessionDetails(self._session_id)
-        if session is None:
-            error_msg = f"Session not found: {self._session_id}"
-            self.logger.error(error_msg)
-            raise RuntimeError(error_msg)
+    def getResponseAsync(self, query_string: str) -> str:
+        """Get a response from the agent asynchronously.
 
-        self._session_manager.recordUserInteractionInSession(
-            self._session_id, query_string
-        )
+        Note: This method is not supported in the base class, use getResponse instead.
+        """
+        raise NotImplementedError("Use getResponse instead - async methods not supported in base class")
 
-        prompt = ""
-        for user_message, system_message in zip(
-            session.user_messages, session.system_messages
-        ):
-            prompt += "User: " + user_message + "\n"
-            prompt += "System: " + system_message + "\n"
-        prompt += "User: " + query_string + "\n"
+    def getResponse(self, query_string: str) -> str:
+        """Get a response from the agent synchronously.
 
-        if self._mcp_client:
-            async with self._mcp_client:
-                # Convert to Sequence for type variance
-                tools: Sequence[types.Tool] = [cast(types.Tool, self._mcp_client.session)]
+        Args:
+            query_string: The query to send to the agent
+
+        Returns:
+            The agent's response
+        
+        Raises:
+            RuntimeError: If there's an error getting the response or if response is empty
+        """
+        async def _get_response() -> str:
+            self.logger.debug("Processing query: %s", query_string)
+            session = self._session_manager.getSessionDetails(self._session_id)
+            if session is None:
+                error_msg = f"Session not found: {self._session_id}"
+                self.logger.error(error_msg)
+                raise RuntimeError(error_msg)
+
+            self._session_manager.recordUserInteractionInSession(
+                self._session_id, query_string
+            )
+
+            prompt = ""
+            for user_message, system_message in zip(
+                session.user_messages, session.system_messages
+            ):
+                prompt += "User: " + user_message + "\n"
+                prompt += "System: " + system_message + "\n"
+            prompt += "User: " + query_string + "\n"
+
+            if self._mcp_client:
+                async with self._mcp_client:
+                    # Using list instead of Sequence for tool type compatibility
+                    tools = [cast(types.Tool, self._mcp_client.session)]
+                    response = await self.client.aio.models.generate_content(
+                        model=self.model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=session.base_instruction, 
+                            tools=tools
+                        ),
+                    )
+            else:
                 response = await self.client.aio.models.generate_content(
                     model=self.model,
                     contents=prompt,
                     config=types.GenerateContentConfig(
-                        system_instruction=session.base_instruction, 
-                        tools=tools
+                        system_instruction=session.base_instruction
                     ),
                 )
-        else:
-            response = await self.client.aio.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=session.base_instruction
-                ),
-            )
 
-        self.logger.debug("Raw response: %s", response)
+            self.logger.debug("Raw response: %s", response)
 
-        response_txt = response.text
-        if response_txt is not None:
+            response_txt = response.text
+            if response_txt is None:
+                raise RuntimeError("Received empty response from model")
+                
             self._session_manager.recordSystemInteractionInSession(
                 self._session_id, response_txt
             )
-        return response_txt
+            return response_txt
 
-    def getResponse(self, query: str) -> str:
-        result = self._event_loop.run_until_complete(self.getResponseAsync(query))
-        if result is None:
-            raise RuntimeError("Failed to get response from model")
-        return result
+        # Run the async function in the event loop
+        response = self._event_loop.run_until_complete(_get_response())
+        return response
 
     async def cleanup(self) -> None:
         """Cleanup event loop"""
         if self._event_loop and not self._event_loop.is_closed():
             self._event_loop.close()
-            # Create a new type variable to satisfy the type checker
             self._event_loop = cast(asyncio.AbstractEventLoop, None)

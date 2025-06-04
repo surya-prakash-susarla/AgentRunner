@@ -105,16 +105,23 @@ class ConfigManager:
                 self._mcp_config = MCPConfig.from_dict(config_data)
 
             # Load agent configurations from runners array
-            runners_data: List[Dict[str, object]] = config_data.get("runners", [])
+            runners_raw = config_data.get("runners", [])
+            if not isinstance(runners_raw, list):
+                logger.error("'runners' configuration must be a list")
+                return
+
             self._agent_configs = {}
-            for i, runner_data in enumerate(runners_data):
-                runner_data: Dict[str, object]
-                if "type" not in runner_data or "isMain" not in runner_data:
+            for i, runner_raw in enumerate(runners_raw):
+                if not isinstance(runner_raw, dict):
+                    logger.warning(f"Skipping runner {i}: not a dictionary")
+                    continue
+
+                if "type" not in runner_raw or "isMain" not in runner_raw:
                     logger.warning(f"Skipping runner {i}: missing required fields")
                     continue
 
                 # Validate runner type
-                runner_str = runner_data["type"]
+                runner_str = str(runner_raw["type"])
                 try:
                     runner_type = RunnerType(runner_str)
                 except ValueError:
@@ -124,30 +131,39 @@ class ConfigManager:
                     continue
 
                 name = f"{runner_str}"  # Generate a unique name
+
+                # Type-safe extraction of configuration values
+                is_main = bool(runner_raw["isMain"])
+                tools_raw = runner_raw.get("tools", [])
+                tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
+                api_key = str(runner_raw.get("apiKey")) if runner_raw.get("apiKey") is not None else None
+                model = str(runner_raw.get("model", "gemini-pro"))
+
                 runtime = AgentRuntime(
                     runner=runner_type,
-                    is_main=runner_data["isMain"],
-                    tools=runner_data.get("tools", []),
-                    api_key=runner_data.get("apiKey"),
-                    model=runner_data.get("model"),
+                    is_main=is_main,
+                    tools=tools,
+                    api_key=api_key,
+                    model=model,
                 )
                 self._agent_configs[name] = runtime
 
             # Load runtime config if present
-            runtime_data: Optional[Dict[str, object]] = config_data.get("runtime")
-            if (
-                runtime_data is not None
-                and isinstance(runtime_data, dict)
-                and "maxGlobalChildren" in runtime_data
-                and "defaultTimeoutSeconds" in runtime_data
-            ):
-                max_children = runtime_data["maxGlobalChildren"]
-                timeout = runtime_data["defaultTimeoutSeconds"]
-                if isinstance(max_children, int) and isinstance(timeout, int):
-                    self._runtime = RuntimeConfig(
-                        max_global_children=max_children,
-                        default_timeout_seconds=timeout,
-                    )
+            runtime_raw = config_data.get("runtime")
+            if runtime_raw is not None and isinstance(runtime_raw, dict):
+                max_children_raw = runtime_raw.get("maxGlobalChildren")
+                timeout_raw = runtime_raw.get("defaultTimeoutSeconds")
+                
+                if max_children_raw is not None and timeout_raw is not None:
+                    try:
+                        max_children = int(max_children_raw)
+                        timeout = int(timeout_raw)
+                        self._runtime = RuntimeConfig(
+                            max_global_children=max_children,
+                            default_timeout_seconds=timeout,
+                        )
+                    except (ValueError, TypeError):
+                        logger.error("Runtime configuration values must be integers")
 
             logger.info("Configuration loaded successfully")
 
