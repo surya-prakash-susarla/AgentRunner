@@ -71,7 +71,8 @@ class AgentProcess:
             logger.error("Fatal error in agent process: %s", str(e))
             try:
                 output_q.put(f"[Fatal Agent Error]: {str(e)}")
-            except:
+            except Exception:
+                # If we can't put to the queue, there's not much we can do
                 pass
         finally:
             if runner:

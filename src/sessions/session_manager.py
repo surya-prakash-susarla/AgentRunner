@@ -6,12 +6,13 @@ from src.sessions.session import Session
 
 
 class SessionsManager:
+    """Manager for handling chat sessions and their associated state."""
     def __init__(self) -> None:
         # Initialize dict to hold session id to session object mapping
         self.sessions: Dict[str, Session] = {}
 
-    def createSession(self, base_instruction: str) -> str:
-        """Creates a new uuid for the session and initializes a session object to store the instruction for this session"""
+    def create_session(self, base_instruction: str) -> str:
+        """Create a new UUID for the session and initialize a session object to store the instruction."""
         session_id: str = str(uuid.uuid4())
         self.sessions[session_id] = Session(
             base_instruction=base_instruction,
@@ -22,8 +23,8 @@ class SessionsManager:
         )
         return session_id
 
-    def getSessionDetails(self, session_id: str) -> Session | None:
-        """Returns the session details for a session object"""
+    def get_session_details(self, session_id: str) -> Session | None:
+        """Get the session details for a session object."""
         if session_id in self.sessions:
             return self.sessions[session_id]
         return None

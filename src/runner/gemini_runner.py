@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from typing import Any, List, Optional, cast
+from typing import Any, Optional, cast
 
-from fastmcp import Client, FastMCP
+from fastmcp import Client
 from google import genai
 from google.genai import types
 
@@ -12,6 +12,7 @@ from src.utils.logging_config import setup_logger
 
 
 class GeminiRunner(AgentRunner):
+    """Runner implementation for Google's Gemini LLM model."""
     def __init__(
         self,
         instruction: str,
@@ -34,7 +35,7 @@ class GeminiRunner(AgentRunner):
 
         self.logger.debug("GeminiRunner initialized with session %s", self._session_id)
 
-    def configureMcp(self, client: Client) -> None:
+    def configure_mcp(self, client: Client) -> None:
         """Configure the MCP client for this runner.
 
         Args:
@@ -43,7 +44,7 @@ class GeminiRunner(AgentRunner):
         self.logger.debug("Configuring MCP client")
         self._mcp_client = client
 
-    def getMcpClient(self) -> Optional[Client]:
+    def get_mcp_client(self) -> Optional[Client]:
         """Get the MCP client if one is configured for this agent.
 
         Returns:
@@ -51,7 +52,7 @@ class GeminiRunner(AgentRunner):
         """
         return self._mcp_client
 
-    def getResponseAsync(self, query_string: str) -> str:
+    def get_response_async(self, query_string: str) -> str:
         """Get a response from the agent asynchronously.
 
         Note: This method is not supported in the base class, use getResponse instead.
@@ -60,7 +61,7 @@ class GeminiRunner(AgentRunner):
             "Use getResponse instead - async methods not supported in base class"
         )
 
-    def getResponse(self, query_string: str) -> str:
+    def get_response(self, query_string: str) -> str:
         """Get a response from the agent synchronously.
 
         Args:

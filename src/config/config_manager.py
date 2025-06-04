@@ -12,16 +12,22 @@ logger = setup_logger(__name__, logging.INFO)
 
 @dataclass
 class MCPServerConfig:
+    """Configuration for an MCP server with command and arguments."""
     command: str
     args: List[str]
 
     def to_dict(self) -> dict[str, str | list[str]]:
+        """Convert the configuration to a dictionary.
+        
+        Returns:
+            A dictionary with command and args keys.
+        """
         return {"command": self.command, "args": self.args}
 
 
 @dataclass
 class MCPConfig:
-    mcpServers: Dict[str, MCPServerConfig] = field(default_factory=dict)
+    mcp_servers: Dict[str, MCPServerConfig] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: Dict) -> "MCPConfig":
@@ -62,8 +68,10 @@ class RuntimeConfig:
 
 
 class ConfigManager:
+    """Manager for loading and accessing configuration for runners and MCP servers."""
+    
     def __init__(self) -> None:
-        """Initialize configuration manager and load config immediately"""
+        """Initialize configuration manager and load config immediately."""
         self._agent_configs: Dict[str, AgentRuntime] = {}
         self._runtime: Optional[RuntimeConfig] = None
         self._mcp_config: Optional[MCPConfig] = None
@@ -71,38 +79,37 @@ class ConfigManager:
 
     @property
     def agents(self) -> Dict[str, AgentRuntime]:
-        """Get all agent configurations"""
+        """Get all agent configurations."""
         return self._agent_configs.copy()
 
     @property
     def runtime(self) -> Optional[RuntimeConfig]:
-        """Get runtime configuration"""
+        """Get runtime configuration."""
         return self._runtime
 
     def get_main_agent(self) -> Optional[AgentRuntime]:
-        """Get the main agent configuration"""
+        """Get the main agent configuration."""
         for agent in self._agent_configs.values():
             if agent.is_main:
                 return agent
         return None
 
     def get_agent(self, name: str) -> Optional[AgentRuntime]:
-        """Get an agent's configuration"""
+        """Get an agent's configuration."""
         return self._agent_configs.get(name)
 
     def get_mcp_config(self) -> Optional[MCPConfig]:
-        """Get MCP configuration"""
+        """Get MCP configuration."""
         return self._mcp_config
 
     def _load_config(self) -> None:
-        """Load configuration from the config file"""
+        """Load configuration from the config file."""
         try:
             from src.config.config_handler import get_config
-
             config_data = get_config()
 
-            if config_data["mcpServers"] != None:
-                self._mcp_config = MCPConfig.from_dict(config_data)
+            # Load MCP configuration
+            self._load_mcp_config(config_data)
 
             # Load agent configurations from runners array
             runners_raw = config_data.get("runners", [])
@@ -110,72 +117,102 @@ class ConfigManager:
                 logger.error("'runners' configuration must be a list")
                 return
 
+            # Process each runner configuration
             self._agent_configs = {}
             for i, runner_raw in enumerate(runners_raw):
-                if not isinstance(runner_raw, dict):
-                    logger.warning(f"Skipping runner {i}: not a dictionary")
-                    continue
+                result = self._process_runner_config(runner_raw, i)
+                if result:
+                    name, runtime = result
+                    self._agent_configs[name] = runtime
 
-                if "type" not in runner_raw or "isMain" not in runner_raw:
-                    logger.warning(f"Skipping runner {i}: missing required fields")
-                    continue
-
-                # Validate runner type
-                runner_str = str(runner_raw["type"])
-                try:
-                    runner_type = RunnerType(runner_str)
-                except ValueError:
-                    logger.error(
-                        f"Invalid runner type '{runner_str}' for runner {i}. Must be one of: {[r.value for r in RunnerType]}"
-                    )
-                    continue
-
-                name = f"{runner_str}"  # Generate a unique name
-
-                # Type-safe extraction of configuration values
-                is_main = bool(runner_raw["isMain"])
-                tools_raw = runner_raw.get("tools", [])
-                tools = (
-                    [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
-                )
-                api_key = (
-                    str(runner_raw.get("apiKey"))
-                    if runner_raw.get("apiKey") is not None
-                    else None
-                )
-                model = str(runner_raw.get("model", "gemini-pro"))
-
-                runtime = AgentRuntime(
-                    runner=runner_type,
-                    is_main=is_main,
-                    tools=tools,
-                    api_key=api_key,
-                    model=model,
-                )
-                self._agent_configs[name] = runtime
-
-            # Load runtime config if present
-            runtime_raw = config_data.get("runtime")
-            if runtime_raw is not None and isinstance(runtime_raw, dict):
-                max_children_raw = runtime_raw.get("maxGlobalChildren")
-                timeout_raw = runtime_raw.get("defaultTimeoutSeconds")
-
-                if max_children_raw is not None and timeout_raw is not None:
-                    try:
-                        max_children = int(max_children_raw)
-                        timeout = int(timeout_raw)
-                        self._runtime = RuntimeConfig(
-                            max_global_children=max_children,
-                            default_timeout_seconds=timeout,
-                        )
-                    except (ValueError, TypeError):
-                        logger.error("Runtime configuration values must be integers")
-
+            # Load runtime configuration
+            self._load_runtime_config(config_data)
+            
             logger.info("Configuration loaded successfully")
 
         except Exception as e:
             logger.error(f"Error loading configuration: {str(e)}")
-            raise  # Re-raise the exception as we don't want to silently use defaults
+            raise  # Re-raise as we don't want to silently use defaults
+
+    def _load_mcp_config(self, config_data: dict) -> None:
+        """Load MCP server configuration from config data.
+
+        Args:
+            config_data: Raw configuration dictionary.
+        """
+        if config_data.get("mcpServers") is not None:
+            self._mcp_config = MCPConfig.from_dict(config_data)
+
+    def _load_runtime_config(self, config_data: dict) -> None:
+        """Load runtime configuration from config data.
+
+        Args:
+            config_data: Raw configuration dictionary.
+        """
+        runtime_raw = config_data.get("runtime")
+        if runtime_raw is not None and isinstance(runtime_raw, dict):
+            max_children_raw = runtime_raw.get("maxGlobalChildren")
+            timeout_raw = runtime_raw.get("defaultTimeoutSeconds")
+
+            if max_children_raw is not None and timeout_raw is not None:
+                try:
+                    max_children = int(max_children_raw)
+                    timeout = int(timeout_raw)
+                    self._runtime = RuntimeConfig(
+                        max_global_children=max_children,
+                        default_timeout_seconds=timeout,
+                    )
+                except (ValueError, TypeError):
+                    logger.error("Runtime configuration values must be integers")
+
+    def _validate_runner_type(self, runner_str: str, index: int) -> Optional[RunnerType]:
+        """Validate and convert runner type string to enum.
+
+        Args:
+            runner_str: The runner type string from config.
+            index: Index of the runner in config for error reporting.
+
+        Returns:
+            RunnerType if valid, None otherwise.
+        """
+        try:
+            return RunnerType(runner_str)
+        except ValueError:
+            logger.error(
+                f"Invalid runner type '{runner_str}' for runner {index}. "
+                f"Must be one of: {[r.value for r in RunnerType]}"
+            )
+            return None
+
+    def _process_runner_config(self, runner_raw: dict, index: int) -> Optional[tuple[str, AgentRuntime]]:
+        """Process a single runner configuration entry.
+
+        Args:
+            runner_raw: Raw runner configuration dictionary.
+            index: Index of the runner in config for error reporting.
+
+        Returns:
+            Tuple of (name, AgentRuntime) if valid, None otherwise.
+        """
+        if not isinstance(runner_raw, dict):
+            logger.warning(f"Skipping runner {index}: not a dictionary")
+            return None
+
+        if "type" not in runner_raw or "isMain" not in runner_raw:
+            logger.warning(f"Skipping runner {index}: missing required fields")
+            return None
+
+        runner_str = str(runner_raw["type"])
+        runner_type = self._validate_runner_type(runner_str, index)
+        if runner_type is None:
+            return None
+
+        name = f"{runner_str}"
+        is_main = bool(runner_raw["isMain"])
+        tools_raw = runner_raw.get("tools", [])
+        tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
+        
+        return name, AgentRuntime(name=name, type=runner_type, is_main=is_main, tools=tools)
 
 
 @lru_cache(maxsize=1)

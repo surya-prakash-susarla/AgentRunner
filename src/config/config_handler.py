@@ -2,8 +2,6 @@ import json
 import logging
 import os
 import subprocess
-from pathlib import Path
-
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__, logging.INFO)
@@ -27,7 +25,7 @@ DEFAULT_CONFIG = {
 
 
 def ensure_config_exists() -> None:
-    """Ensure config directory and file exist, create if they don't"""
+    """Ensure config directory and file exist, create if they don't."""
     try:
         # Create config directory if it doesn't exist
         os.makedirs(CONFIG_DIR, exist_ok=True)
@@ -43,7 +41,7 @@ def ensure_config_exists() -> None:
 
 
 def edit_config() -> None:
-    """Open the config file in the user's preferred editor"""
+    """Open the config file in the user's preferred editor."""
     try:
         ensure_config_exists()
 
@@ -68,7 +66,7 @@ def edit_config() -> None:
 
 
 def get_config() -> dict[str, object]:
-    """Read and return the current config"""
+    """Read and return the current config."""
     try:
         ensure_config_exists()
         with open(CONFIG_FILE, "r") as f:
