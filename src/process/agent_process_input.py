@@ -40,7 +40,8 @@ class AgentProcessInput:
         config_manager = get_config_manager()
         if self.child_type.value not in config_manager.agents:
             errors.append(
-                f"Invalid runner type '{self.child_type.value}'. Must be one of: {list(config_manager.agents.keys())}"
+                f"Invalid runner type '{self.child_type.value}'.\n"
+                f"Must be one of: {list(config_manager.agents.keys())}"
             )
 
         # Validate tool_names against MCP master's available tools
@@ -54,7 +55,8 @@ class AgentProcessInput:
             ]
             if invalid_tools:
                 errors.append(
-                    f"Invalid tools requested: {invalid_tools}. Available tools: {available_tools}"
+                    f"Invalid tools requested: {invalid_tools}.\n"
+                    f"Available tools: {available_tools}"
                 )
 
         if errors:

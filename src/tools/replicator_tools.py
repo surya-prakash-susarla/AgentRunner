@@ -3,9 +3,10 @@ from typing import List, Optional
 
 from fastmcp import FastMCP
 
-from src.config.config_manager import RunnerType, get_config_manager
+from src.config.config_manager import RunnerType
 from src.process.agent_process_input import AgentProcessInput
 from src.process.exceptions import ChildAgentNotFoundError
+from src.process.replica_manager import get_replica_manager
 from src.utils.logging_config import setup_logger
 
 # Set up logging
@@ -109,7 +110,7 @@ async def ask_child_agent(child_name: str, question: str) -> str:
 
         # Ask the question and return the response
         logger.info("Forwarding question to child agent '%s'", child_name)
-        response = replica_manager.ask_child(child_name, question)
+        response: str = replica_manager.ask_child(child_name, question)
         logger.info("Received response from child agent '%s'", child_name)
         return response
 
