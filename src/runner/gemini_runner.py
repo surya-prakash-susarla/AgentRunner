@@ -60,6 +60,10 @@ class GeminiRunner(AgentRunner):
     async def getResponseAsync(self, query_string: str) -> str | None:
         self.logger.debug("Processing query: %s", query_string)
         session = self._session_manager.getSessionDetails(self._session_id)
+        if session is None:
+            self.logger.error("Session not found: %s", self._session_id)
+            return None
+
         self._session_manager.recordUserInteractionInSession(
             self._session_id, query_string
         )
@@ -74,7 +78,8 @@ class GeminiRunner(AgentRunner):
 
         if self._mcp_client:
             async with self._mcp_client:
-                tools = [self._mcp_client.session]
+                from typing import Sequence
+                tools: Sequence[Client.session] = [self._mcp_client.session]
                 response = await self.client.aio.models.generate_content(
                     model=self.model,
                     contents=prompt,

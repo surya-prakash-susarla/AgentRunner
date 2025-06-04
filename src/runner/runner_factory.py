@@ -19,7 +19,10 @@ def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
         An instance of AgentRunner or None if creation fails
     """
     # Set up runtime environment first
-    runtime = get_config_manager().agents[input_config.child_type]
+    if not isinstance(input_config.child_type, str):
+        runtime = get_config_manager().agents[input_config.child_type.value]
+    else:
+        runtime = get_config_manager().agents[input_config.child_type]
     runner = None
 
     if input_config.child_type == RunnerType.GEMINI.value:

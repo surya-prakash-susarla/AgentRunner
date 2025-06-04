@@ -19,12 +19,14 @@ class McpMaster:
     allowing for dynamic tool discovery and server configuration.
     """
 
-    def __init__(self, mcp_config: MCPConfig):
+    def __init__(self, mcp_config: MCPConfig | None):
         """Initialize the MCP master controller.
 
         Args:
             mcp_config: Configuration object containing MCP server specifications
         """
+        if mcp_config is None:
+            raise ValueError("MCP configuration cannot be None")
         self._mcp_config = mcp_config
         self._tool_mapping: Dict[str, str] = dict()  # Maps tool names to server names
         self._create_tool_mapping()

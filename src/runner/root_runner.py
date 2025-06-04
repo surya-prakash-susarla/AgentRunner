@@ -35,10 +35,13 @@ def create_root_runner() -> Optional[AgentRunner]:
     for agent_type, runtime in config_manager.agents.items():
         if runtime.is_main:
             main_agent = runtime
-            main_type = agent_type
+            if isinstance(agent_type, str):
+                main_type = RunnerType(agent_type)
+            else:
+                main_type = agent_type
             break
 
-    if not main_agent:
+    if not main_agent or not main_type:
         raise Exception(
             "No main agent configured. Please mark one agent as 'isMain: true' in config"
         )
@@ -84,9 +87,14 @@ def create_root_runner() -> Optional[AgentRunner]:
     )
 
     root_runner = create_runner(input_config)
-    replicator_enabled_client = _get_client_with_replicator_tools(
-        root_runner.getMcpClient()
-    )
+    if root_runner is None:
+        raise Exception("Failed to create root runner")
+
+    mcp_client = root_runner.getMcpClient()
+    if mcp_client is None:
+        raise Exception("Root runner MCP client not configured")
+
+    replicator_enabled_client = _get_client_with_replicator_tools(mcp_client)
     root_runner.configureMcp(replicator_enabled_client)
 
     return root_runner

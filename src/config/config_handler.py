@@ -67,7 +67,7 @@ def edit_config() -> None:
         raise
 
 
-def get_config():
+def get_config() -> dict:
     """Read and return the current config"""
     try:
         ensure_config_exists()

@@ -165,4 +165,7 @@ def get_replica_manager() -> ReplicaManager:
     Returns:
         ReplicaManager: The global ReplicaManager instance
     """
-    return ReplicaManager(max_children=get_config_manager().runtime.max_global_children)
+    runtime = get_config_manager().runtime
+    if runtime is None:
+        raise ValueError("Runtime configuration is not available")
+    return ReplicaManager(max_children=runtime.max_global_children)
