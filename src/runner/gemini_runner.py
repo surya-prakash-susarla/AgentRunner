@@ -32,7 +32,7 @@ class GeminiRunner(AgentRunner):
 
         # Initialize session manager immediately
         self._session_manager: SessionsManager = SessionsManager()
-        self._session_id: str = self._session_manager.createSession(instruction)
+        self._session_id: str = self._session_manager.create_session(instruction)
 
         self.logger.debug("GeminiRunner initialized with session %s", self._session_id)
 
@@ -58,10 +58,10 @@ class GeminiRunner(AgentRunner):
     def get_response_async(self, query_string: str) -> str:
         """Get a response from the agent asynchronously.
 
-        Note: This method is not supported in the base class, use getResponse instead.
+        Note: This method is not supported in the base class, use get_response instead.
         """
         raise NotImplementedError(
-            "Use getResponse instead - async methods not supported in base class"
+            "Use get_response instead - async methods not supported in base class"
         )
 
     def get_response(self, query_string: str) -> str:
@@ -80,7 +80,7 @@ class GeminiRunner(AgentRunner):
 
         async def _get_response() -> str:
             self.logger.debug("Processing query: %s", query_string)
-            session = self._session_manager.getSessionDetails(self._session_id)
+            session = self._session_manager.get_session_details(self._session_id)
             if session is None:
                 error_msg = f"Session not found: {self._session_id}"
                 self.logger.error(error_msg)

@@ -27,25 +27,22 @@ async def create_child_agent(
 ) -> str:
     """Create a new child agent with the specified configuration.
 
-    This tool creates a child agent that is specialized for a particular task through its instruction
-    and has access to a specific set of tools that are relevant to its purpose. The tool names provided
-    must exactly match the names of tools available to the caller, and should be scoped appropriately
-    to match the instruction being given to the agent.
+    Creates a specialized child agent for a particular task, with access to relevant tools.
+    The child agent's configuration must match existing templates in the config.
 
     Args:
-        child_type: The type of the child agent to create (must match a name in the config)
-        child_name: The name of the child agent (must be referenced verbatim in further calls to converse with the child)
-        instruction: The base instruction/system prompt for the child agent
-        tool_names: List of tool names the child agent should have access to. Tools should be relevant to the instruction. Tool names should match verbatim to the list provided to the caller.
+        child_type: Type of child agent (must match config name)
+        child_name: Name for referencing the child in future calls
+        instruction: Base instruction/system prompt for the child
+        tool_names: List of tool names to grant access to (must match available tools)
 
     Returns:
-        str: A message describing the result of the operation
+        str: Success message with operation details
 
     Raises:
-        MaxChildrenExceededError: If maximum number of children has been reached
-        ChildAgentExistsError: If a child with the given name already exists
-        ChildAgentOperationError: If there's an error creating the child process
-
+        MaxChildrenExceededError: If max children limit reached
+        ChildAgentExistsError: If child name already exists
+        ChildAgentOperationError: If creation fails
     """
     logger.info(
         "Received request to create child agent with name: %s and instruction: %s",
@@ -72,9 +69,10 @@ async def create_child_agent(
         try:
             runner_type = RunnerType[child_type.upper()]
         except KeyError:
+            available_types = [t.name for t in RunnerType]
             raise ValueError(
-                f"Invalid runner type: {child_type}. Must be one of {[t.name for t in RunnerType]}"
-            )
+                f"Invalid runner type: {child_type}. Must be one of {available_types}"
+            ) from None
 
         input_config = AgentProcessInput(
             name=child_name,
@@ -84,7 +82,10 @@ async def create_child_agent(
         )
         replica_manager.create_child(input_config)
 
-        success_msg = f"Successfully created child agent '{child_type}' with instruction: {instruction}"
+        success_msg = (
+            f"Successfully created child agent '{child_type}' "
+            f"with instruction: {instruction}"
+        )
         logger.info(success_msg)
         return success_msg
 
@@ -97,7 +98,7 @@ async def create_child_agent(
 
 @replicator_tools_server.tool()
 async def ask_child_agent(child_name: str, question: str) -> str:
-    """Sends a question to a specific child agent and waits for response
+    """Send a question to a specific child agent and wait for response.
 
     Args:
         child_name: The name of the child agent to ask (e.g. 'agent_1')
@@ -111,7 +112,6 @@ async def ask_child_agent(child_name: str, question: str) -> str:
         ChildAgentNotRunningError: If the child agent process is not running
         ChildAgentTimeoutError: If the request times out
         ChildAgentOperationError: If there's an error getting the response
-
     """
     logger.info("Received request to ask child agent '%s': %s", child_name, question)
 

@@ -15,58 +15,51 @@ logger = setup_logger(__name__, logging.INFO)
 class McpMaster:
     """Master controller for MCP tool servers and tool mapping.
 
-    This class manages the mapping between individual tools and their respective MCP servers,
-    allowing for dynamic tool discovery and server configuration.
+    Manages the mapping between tools and their MCP servers, enabling dynamic tool
+    discovery and server configuration.
     """
 
     def __init__(self, mcp_config: MCPConfig | None):
         """Initialize the MCP master controller.
 
         Args:
-            mcp_config: Configuration object containing MCP server specifications
+            mcp_config: Configuration object containing MCP server specs.
 
+        Raises:
+            ValueError: If mcp_config is None.
         """
         if mcp_config is None:
             raise ValueError("MCP configuration cannot be None")
         self._mcp_config = mcp_config
-        self._tool_mapping: Dict[str, str] = dict()  # Maps tool names to server names
+        self._tool_mapping = {}  # Maps tool names to server names
         self._create_tool_mapping()
 
     def _create_tool_mapping(self) -> None:
         """Create the internal mapping of tools to their respective servers.
 
-        This method queries each configured MCP server to discover its available tools
+        Queries each configured MCP server to discover its available tools
         and builds a mapping for future lookups.
         """
         logger.info("Creating tool mapping")
 
         for server_name in self._mcp_config.list_servers():
-            logger.info(
-                "Creating tool mapping for server: {server}".format(server=server_name)
-            )
+            logger.info(f"Creating tool mapping for server: {server_name}")
             server_config = self._generate_mcp_config_from_subconfig(server_name)
-            logger.info(
-                "Generated server config: {config}".format(config=server_config)
-            )
+            logger.info(f"Generated server config: {server_config}")
             tools = asyncio.run(self._get_tool_names(server_config))
             for tool in tools:
                 self._tool_mapping[tool] = server_name
 
-        logger.info(
-            "All tools mapped, final mapping: {tool_mapping}".format(
-                tool_mapping=self._tool_mapping
-            )
-        )
+        logger.info(f"All tools mapped, final mapping: {self._tool_mapping}")
 
     async def _get_tool_names(self, server_config: Dict) -> list[str]:
         """Get list of tool names available from an MCP server.
 
         Args:
-            server_config: MCP server configuration dictionary
+            server_config: MCP server configuration dictionary.
 
         Returns:
-            List of tool names available on the server
-
+            List of tool names available on the server.
         """
         async with Client(server_config) as client:
             tools = await client.list_tools()
@@ -76,25 +69,27 @@ class McpMaster:
         """Generate an MCP configuration for a specific server.
 
         Args:
-            server_name: Name of the server to generate config for
+            server_name: Name of the server to generate config for.
 
         Returns:
-            Dictionary containing the MCP server configuration
+            Dictionary containing the MCP server configuration.
 
+        Raises:
+            ValueError: If MCP config not found for the server.
         """
         mcp_config = get_config_manager().get_mcp_config()
         if mcp_config is None:
             raise ValueError(f"MCP config not found for server {server_name}")
+
         return {
             "mcpServers": {server_name: mcp_config.get_server(server_name).to_dict()}
         }
 
     def get_available_tools(self) -> List[str]:
-        """Get a list of all available tool names across all MCP servers.
+        """Get all available tool names across MCP servers.
 
         Returns:
-            List of all known tool names that can be used with MCP clients
-
+            List of all known tool names that can be used with MCP clients.
         """
         return list(self._tool_mapping.keys())
 

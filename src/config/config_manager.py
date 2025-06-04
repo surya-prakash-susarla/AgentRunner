@@ -18,7 +18,7 @@ class MCPServerConfig:
 
     def to_dict(self) -> dict[str, str | list[str]]:
         """Convert the configuration to a dictionary.
-        
+
         Returns:
             A dictionary with command and args keys.
 
@@ -28,25 +28,58 @@ class MCPServerConfig:
 
 @dataclass
 class MCPConfig:
+    """Configuration for MCP (Model Context Protocol) servers.
+
+    This class stores and manages the configuration for MCP servers, including
+    their command-line arguments and other settings.
+
+    Args:
+        mcp_servers: Dictionary mapping server names to their configurations.
+    """
+
     mcp_servers: Dict[str, MCPServerConfig] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: Dict) -> "MCPConfig":
+        """Create an MCPConfig instance from a dictionary.
+
+        Args:
+            data: Dictionary containing MCP server configurations.
+
+        Returns:
+            A new MCPConfig instance.
+        """
         servers = {
             name: MCPServerConfig(**spec)
             for name, spec in data.get("mcpServers", {}).items()
         }
-        return cls(mcpServers=servers)
+        return cls(mcp_servers=servers)
 
     def get_server(self, name: str) -> MCPServerConfig:
-        return self.mcpServers[name]
+        """Get configuration for a specific server.
+
+        Args:
+            name: Name of the server to retrieve.
+
+        Returns:
+            Configuration for the specified server.
+        """
+        return self.mcp_servers[name]
 
     def list_servers(self) -> List[str]:
-        return list(self.mcpServers.keys())
+        """Get a list of all configured server names.
+
+        Returns:
+            List of server names in the configuration.
+        """
+        return list(self.mcp_servers.keys())
 
 
 class RunnerType(Enum):
-    """Supported runner types"""
+    """Supported runner types for agents.
+
+    Defines the valid types of runners that can be used to execute agents.
+    """
 
     GEMINI = "gemini"
 
@@ -64,6 +97,16 @@ class AgentRuntime:
 
 @dataclass
 class RuntimeConfig:
+    """Configuration for runtime behavior.
+
+    Holds configuration values that control the runtime behavior of the system,
+    such as process limits and timeouts.
+
+    Args:
+        max_global_children: Maximum number of child processes allowed.
+        default_timeout_seconds: Default timeout for operations in seconds.
+    """
+
     max_global_children: int
     default_timeout_seconds: int
 
@@ -107,6 +150,7 @@ class ConfigManager:
         """Load configuration from the config file."""
         try:
             from src.config.config_handler import get_config
+
             config_data = get_config()
 
             # Load MCP configuration
@@ -168,7 +212,9 @@ class ConfigManager:
                 except (ValueError, TypeError):
                     logger.error("Runtime configuration values must be integers")
 
-    def _validate_runner_type(self, runner_str: str, index: int) -> Optional[RunnerType]:
+    def _validate_runner_type(
+        self, runner_str: str, index: int
+    ) -> Optional[RunnerType]:
         """Validate and convert runner type string to enum.
 
         Args:
@@ -188,7 +234,9 @@ class ConfigManager:
             )
             return None
 
-    def _process_runner_config(self, runner_raw: dict, index: int) -> Optional[tuple[str, AgentRuntime]]:
+    def _process_runner_config(
+        self, runner_raw: dict, index: int
+    ) -> Optional[tuple[str, AgentRuntime]]:
         """Process a single runner configuration entry.
 
         Args:
@@ -217,10 +265,14 @@ class ConfigManager:
         tools_raw = runner_raw.get("tools", [])
         tools = [str(t) for t in tools_raw] if isinstance(tools_raw, list) else []
 
-        return name, AgentRuntime(name=name, type=runner_type, is_main=is_main, tools=tools)
+        return name, AgentRuntime(runner=runner_type, is_main=is_main, tools=tools)
 
 
 @lru_cache(maxsize=1)
 def get_config_manager() -> ConfigManager:
-    """Get the singleton instance of ConfigManager"""
+    """Get the singleton instance of ConfigManager.
+
+    Returns:
+        The singleton ConfigManager instance.
+    """
     return ConfigManager()

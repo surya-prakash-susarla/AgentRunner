@@ -13,7 +13,14 @@ class SessionsManager:
         self.sessions: Dict[str, Session] = {}
 
     def create_session(self, base_instruction: str) -> str:
-        """Create a new UUID for the session and initialize a session object to store the instruction."""
+        """Create a new UUID for the session and initialize a session object to store the instruction.
+
+        Args:
+            base_instruction: The base instruction to initialize the session with.
+
+        Returns:
+            str: The newly created session ID.
+        """
         session_id: str = str(uuid.uuid4())
         self.sessions[session_id] = Session(
             base_instruction=base_instruction,
@@ -25,15 +32,25 @@ class SessionsManager:
         return session_id
 
     def get_session_details(self, session_id: str) -> Session | None:
-        """Get the session details for a session object."""
+        """Get the session details for a session object.
+
+        Args:
+            session_id: The ID of the session to retrieve.
+
+        Returns:
+            Session | None: The session object if found, None otherwise.
+        """
         if session_id in self.sessions:
             return self.sessions[session_id]
         return None
 
-    def recordUserInteractionInSession(
-        self, session_id: str, user_message: str
-    ) -> None:
-        """Updates the given session with the user message content provided, i.e., appends them to the appropriate lists"""
+    def record_user_interaction(self, session_id: str, user_message: str) -> None:
+        """Update the given session with the user message and set turn to system.
+
+        Args:
+            session_id: The ID of the session to update.
+            user_message: The message from the user to record.
+        """
         if session_id in self.sessions:
             self.sessions[session_id].user_messages.append(user_message)
             self.sessions[session_id].current_turn = "system"
@@ -41,10 +58,13 @@ class SessionsManager:
         else:
             print(f"Session {session_id} not found")
 
-    def recordSystemInteractionInSession(
-        self, session_id: str, system_message: str
-    ) -> None:
-        """Updates the given session with the system message content provided, i.e., appends them to the appropriate lists"""
+    def record_system_interaction(self, session_id: str, system_message: str) -> None:
+        """Update the given session with the system message and set turn to user.
+
+        Args:
+            session_id: The ID of the session to update.
+            system_message: The message from the system to record.
+        """
         if session_id in self.sessions:
             self.sessions[session_id].system_messages.append(system_message)
             self.sessions[session_id].current_turn = "user"
@@ -52,8 +72,12 @@ class SessionsManager:
         else:
             print(f"Session {session_id} not found")
 
-    def deleteSession(self, session_id: str) -> None:
-        """Removes a session"""
+    def delete_session(self, session_id: str) -> None:
+        """Remove a session.
+
+        Args:
+            session_id: The ID of the session to delete.
+        """
         if session_id in self.sessions:
             del self.sessions[session_id]
         else:

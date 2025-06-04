@@ -24,6 +24,7 @@ console = Console()
 
 
 def initialize() -> None:
+    """Initialize the application configuration and MCP tools."""
     # Initialize the config files and config file handler.
     get_config()
 
@@ -33,7 +34,11 @@ def initialize() -> None:
 
 @app.command()
 def chat() -> None:
-    """Start an interactive chat session with an LLM agent"""
+    """Start an interactive chat session with an LLM agent.
+
+    This command creates a root agent and starts the main chat loop where
+    users can interact with the agent through the command line.
+    """
     runner = None
     try:
         # Create and set up the root runner
@@ -52,7 +57,7 @@ def chat() -> None:
             if query.lower() in ["exit", "quit"]:
                 console.print("[yellow]Chat session ended by user[/yellow]")
                 break
-            response = runner.getResponse(query)
+            response = runner.get_response(query)
             console.print(f"[bold green]Assistant:[/bold green] {response}")
     except KeyboardInterrupt:
         console.print(
@@ -67,7 +72,11 @@ def chat() -> None:
 
 @app.command()
 def config() -> None:
-    """Edit the configuration file in your default editor"""
+    """Edit the configuration file in your default editor.
+
+    This command opens the configuration file in the default editor,
+    allowing direct editing of the application settings.
+    """
     try:
         edit_config()
         console.print("[green]Configuration updated successfully[/green]")
@@ -76,6 +85,7 @@ def config() -> None:
 
 
 def main() -> None:
+    """Entry point for the replica-llm CLI application."""
     load_dotenv()
     initialize()
     app()

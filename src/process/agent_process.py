@@ -12,6 +12,16 @@ from .agent_process_input import AgentProcessInput
 
 
 class AgentProcess:
+    """A class representing a separate process for running an agent.
+
+    This class manages the communication channels and lifecycle of a child process
+    that runs an agent. It provides methods to send messages to the agent and
+    receive responses through queues.
+
+    Args:
+        input_config: Configuration object with details needed to create and run the agent.
+    """
+
     def __init__(self, input_config: AgentProcessInput) -> None:
         self.input_q: Queue = Queue()
         self.output_q: Queue = Queue()
@@ -40,12 +50,9 @@ class AgentProcess:
         try:
             # Create runner inside the child process
             runner = create_runner(input_config)
-            if runner == None:
-                raise Exception(
-                    "No runner could be created, the given child type was: {child_type}".format(
-                        child_type=input_config.child_type
-                    )
-                )
+            if runner is None:
+                error_msg = f"No runner could be created for child type: {input_config.child_type}"
+                raise Exception(error_msg)
 
             while True:
                 query = input_q.get()
@@ -56,7 +63,7 @@ class AgentProcess:
                     break
 
                 try:
-                    response = runner.getResponse(query)
+                    response = runner.get_response(query)
                 except Exception as e:
                     logger.error("Error processing query: %s", str(e))
                     response = f"[Agent Error]: {str(e)}"
@@ -109,16 +116,13 @@ class AgentProcess:
 
         try:
             response = cast(str, self.output_q.get(timeout=timeout))
-            self.logger.debug(
-                "Received response from process %s (PID: %d)",
-                self._input_config.name,
-                self.proc.pid,
-            )
             return response
-        except queue.Empty:
-            raise queue.Empty(
-                f"No response received from process {self._input_config.name} within {timeout} seconds"
+        except queue.Empty as err:
+            msg = (
+                f"No response from process {self._input_config.name} "
+                f"within {timeout} seconds"
             )
+            raise queue.Empty(msg) from err
 
     def kill(self) -> None:
         """Stop the agent process."""
@@ -130,6 +134,11 @@ class AgentProcess:
         self.logger.info("Agent process %s terminated", self._input_config.name)
 
     def is_alive(self) -> bool:
+        """Check if the agent process is still running.
+
+        Returns:
+            bool: True if the process is running, False otherwise.
+        """
         is_alive = self.proc.is_alive()
         self.logger.debug(
             "Process %s (PID: %d) alive status: %s",

@@ -90,12 +90,12 @@ def create_root_runner() -> Optional[AgentRunner]:
     if root_runner is None:
         raise Exception("Failed to create root runner")
 
-    mcp_client = root_runner.getMcpClient()
+    mcp_client = root_runner.get_mcp_client()
     if mcp_client is None:
         raise Exception("Root runner MCP client not configured")
 
     replicator_enabled_client = _get_client_with_replicator_tools(mcp_client)
-    root_runner.configureMcp(replicator_enabled_client)
+    root_runner.configure_mcp(replicator_enabled_client)
 
     return root_runner
 
