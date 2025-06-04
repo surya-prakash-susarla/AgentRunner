@@ -34,9 +34,7 @@ class AgentProcessInput:
 
         # Validate instruction
         if not self.instruction or not self.instruction.strip():
-            errors.append(
-                f"Invalid runner type '{self.child_type}'."
-            )
+            errors.append("Instruction cannot be empty")
 
         # Validate child_type against config
         config_manager = get_config_manager()
@@ -50,7 +48,7 @@ class AgentProcessInput:
             from src.tools.mcp_master import get_mcp_master
 
             mcp_master = get_mcp_master()
-            available_tools = mcp_master.list_available_tools()
+            available_tools = mcp_master.get_available_tools()
             invalid_tools = [
                 tool for tool in self.tool_names if tool not in available_tools
             ]
