@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, List, Optional, cast
+from typing import Any, List, Optional, Sequence, cast
 
 from fastmcp import Client, FastMCP
 from google import genai
@@ -79,12 +79,14 @@ class GeminiRunner(AgentRunner):
 
         if self._mcp_client:
             async with self._mcp_client:
+                # Convert to Sequence for type variance
+                tools: Sequence[types.Tool] = [cast(types.Tool, self._mcp_client.session)]
                 response = await self.client.aio.models.generate_content(
                     model=self.model,
                     contents=prompt,
                     config=types.GenerateContentConfig(
                         system_instruction=session.base_instruction, 
-                        tools=[cast(types.Tool, self._mcp_client.session)]
+                        tools=tools
                     ),
                 )
         else:
@@ -115,4 +117,5 @@ class GeminiRunner(AgentRunner):
         """Cleanup event loop"""
         if self._event_loop and not self._event_loop.is_closed():
             self._event_loop.close()
-            self._event_loop = None
+            # Create a new type variable to satisfy the type checker
+            self._event_loop = cast(asyncio.AbstractEventLoop, None)

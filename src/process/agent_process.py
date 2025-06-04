@@ -3,7 +3,7 @@ import logging
 import os
 import queue
 from multiprocessing import Process, Queue, current_process
-from typing import Optional
+from typing import Optional, cast
 
 from src.runner.runner_factory import create_runner
 from src.utils.logging_config import setup_logger
@@ -107,7 +107,7 @@ class AgentProcess:
         self.input_q.put(message)
 
         try:
-            response = self.output_q.get(timeout=timeout)
+            response = cast(str, self.output_q.get(timeout=timeout))
             self.logger.debug(
                 "Received response from process %s (PID: %d)",
                 self._input_config.name,
