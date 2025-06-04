@@ -3,11 +3,9 @@ from typing import List, Optional
 
 from fastmcp import FastMCP
 
-from src.config.config_manager import RunnerType
+from src.config.config_manager import RunnerType, get_config_manager
 from src.process.agent_process_input import AgentProcessInput
-from src.process.exceptions import (
-    ChildAgentNotFoundError,
-)
+from src.process.exceptions import ChildAgentNotFoundError
 from src.process.replica_manager import get_replica_manager
 from src.utils.logging_config import setup_logger
 
@@ -25,29 +23,23 @@ async def create_child_agent(
     instruction: str,
     tool_names: Optional[List[str]] = None,
 ) -> str:
-    """Create a new child agent with the specified configuration.
-
-    Creates a specialized child agent for a particular task, with access to
-    relevant tools.
-    The child agent's configuration must match existing templates in the config.
+    """Create a new child agent process.
 
     Args:
-        child_type: Type of child agent (must match config name)
-        child_name: Name for referencing the child in future calls
-        instruction: Base instruction/system prompt for the child
-        tool_names: List of tool names to grant access to (must match available tools)
+        child_type: Type of agent to create ('gemini', etc.)
+        child_name: Name for the new child agent
+        instruction: Base instruction for the agent
+        tool_names: Optional list of tool names to give the agent access to
 
     Returns:
-        str: Success message with operation details
+        Success or error message string
 
     Raises:
-        MaxChildrenExceededError: If max children limit reached
-        ChildAgentExistsError: If child name already exists
-        ChildAgentOperationError: If creation fails
-
+        ValueError: If the agent type or configuration is invalid
+        Exception: For other creation failures
     """
     logger.info(
-        "Received request to create child agent with name: %s and instruction: %s",
+        "Received create_child_agent request for %s with instruction: %s",
         child_type,
         instruction,
     )
@@ -57,30 +49,21 @@ async def create_child_agent(
         replica_manager = get_replica_manager()
 
         # Validate that the agent name exists in the config
-        from src.config.config_manager import get_config_manager
-
         config_manager = get_config_manager()
-        if child_type not in config_manager.agents:
-            raise ValueError(f"Agent name '{child_type}' not found in config")
-
-        # Create the child process through the replica manager
-        logger.info("Creating child agent of type: %s", child_type)
-        # Convert None to empty list for tool_names
-        tools_list = tool_names if tool_names else []
-
         try:
-            runner_type = RunnerType[child_type.upper()]
-        except KeyError:
-            available_types = [t.name for t in RunnerType]
+            # Convert string to RunnerType enum directly
+            runner_type = RunnerType(child_type.lower())
+        except ValueError:
+            available_types = [t.value for t in RunnerType]
             raise ValueError(
                 f"Invalid runner type: {child_type}. Must be one of {available_types}"
-            ) from None
+            )
 
         input_config = AgentProcessInput(
             name=child_name,
             child_type=runner_type,
             instruction=instruction,
-            tool_names=tools_list,
+            tool_names=tool_names if tool_names else [],
         )
         replica_manager.create_child(input_config)
 

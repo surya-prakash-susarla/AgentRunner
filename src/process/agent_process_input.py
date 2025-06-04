@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from src.config.config_manager import RunnerType, get_config_manager
 from src.process.exceptions import ChildAgentOperationError
@@ -34,15 +34,15 @@ class AgentProcessInput:
 
         # Validate instruction
         if not self.instruction or not self.instruction.strip():
-            errors.append("Instruction cannot be empty")
+            errors.append(
+                f"Invalid runner type '{self.child_type}'."
+            )
 
         # Validate child_type against config
         config_manager = get_config_manager()
-        if self.child_type not in config_manager.agents:
+        if self.child_type.value not in config_manager.agents:
             errors.append(
-                "Invalid runner type '{}'. Must be one of: {}".format(
-                    self.child_type, list(config_manager.agents.keys())
-                )
+                f"Invalid runner type '{self.child_type.value}'. Must be one of: {list(config_manager.agents.keys())}"
             )
 
         # Validate tool_names against MCP master's available tools
@@ -50,24 +50,17 @@ class AgentProcessInput:
             from src.tools.mcp_master import get_mcp_master
 
             mcp_master = get_mcp_master()
-            available_tools = mcp_master.get_available_tools()
-
-            # Collect all missing tools
-            missing_tools = [
+            available_tools = mcp_master.list_available_tools()
+            invalid_tools = [
                 tool for tool in self.tool_names if tool not in available_tools
             ]
-            if missing_tools:
+            if invalid_tools:
                 errors.append(
-                    "The following tools are not available in any MCP server: {}\n"
-                    "Available tools: {}".format(missing_tools, available_tools)
+                    f"Invalid tools requested: {invalid_tools}. Available tools: {available_tools}"
                 )
 
         if errors:
-            raise ChildAgentOperationError(
-                name=self.name,
-                operation="initialization",
-                error="Invalid agent configuration:\n- " + "\n- ".join(errors),
-            )
+            raise ChildAgentOperationError(self.name, "validation", "\n".join(errors))
 
     def validate(self) -> list[str]:
         """Validate configuration settings.

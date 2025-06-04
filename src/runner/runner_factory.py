@@ -23,13 +23,11 @@ def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
 
     """
     # Set up runtime environment first
-    if not isinstance(input_config.child_type, str):
-        runtime = get_config_manager().agents[input_config.child_type.value]
-    else:
-        runtime = get_config_manager().agents[input_config.child_type]
+    runtime = get_config_manager().agents[input_config.child_type.value]
     runner = None
 
-    if input_config.child_type == RunnerType.GEMINI.value:
+    # Create runner based on type
+    if input_config.child_type == RunnerType.GEMINI:
         os.environ["GOOGLE_API_KEY"] = runtime.api_key
         runner = GeminiRunner(instruction=input_config.instruction)
 
@@ -37,6 +35,6 @@ def create_runner(input_config: AgentProcessInput) -> Optional[AgentRunner]:
         if input_config.tool_names:
             mcp_master = get_mcp_master()
             mcp_client = mcp_master.create_client_for_tools(input_config.tool_names)
-            runner.configureMcp(mcp_client)
+            runner.configure_mcp(mcp_client)
 
     return runner
