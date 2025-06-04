@@ -180,10 +180,10 @@ class ReplicaManager:
 
 @lru_cache(maxsize=1)
 def get_replica_manager() -> ReplicaManager:
-    """Get or create the global ReplicaManager instance
+    """Get or create the global ReplicaManager instance.
 
     Returns:
-        ReplicaManager: The global ReplicaManager instance
+        ReplicaManager: The global ReplicaManager instance.
 
     """
     runtime = get_config_manager().runtime

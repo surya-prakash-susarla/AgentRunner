@@ -27,7 +27,8 @@ async def create_child_agent(
 ) -> str:
     """Create a new child agent with the specified configuration.
 
-    Creates a specialized child agent for a particular task, with access to relevant tools.
+    Creates a specialized child agent for a particular task, with access to
+    relevant tools.
     The child agent's configuration must match existing templates in the config.
 
     Args:

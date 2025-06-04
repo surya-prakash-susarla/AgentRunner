@@ -105,7 +105,8 @@ def create_root_runner() -> Optional[AgentRunner]:
 def _get_client_with_replicator_tools(client: Client) -> Client:
     """Add replicator tools to an existing MCP client.
 
-    This ensures the client has access to tools needed for agent replication and management.
+    This ensures the client has access to tools needed for agent replication and
+    management.
 
     Args:
         client: The existing MCP client to enhance
