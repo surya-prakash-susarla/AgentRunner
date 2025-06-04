@@ -5,7 +5,7 @@ agents:
     model: gemini-pro
 
 logging:
-  level: ${LOG_LEVEL:INFO}
+  level: ${LOG_LEVEL:DEBUG}
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   
 mcp:
