@@ -105,9 +105,10 @@ class ConfigManager:
                 self._mcp_config = MCPConfig.from_dict(config_data)
 
             # Load agent configurations from runners array
-            runners_data = config_data.get("runners", [])
+            runners_data: List[Dict[str, object]] = config_data.get("runners", [])
             self._agent_configs = {}
             for i, runner_data in enumerate(runners_data):
+                runner_data: Dict[str, object]
                 if "type" not in runner_data or "isMain" not in runner_data:
                     logger.warning(f"Skipping runner {i}: missing required fields")
                     continue
@@ -133,16 +134,20 @@ class ConfigManager:
                 self._agent_configs[name] = runtime
 
             # Load runtime config if present
-            runtime_data = config_data.get("runtime")
+            runtime_data: Optional[Dict[str, object]] = config_data.get("runtime")
             if (
-                runtime_data
+                runtime_data is not None
+                and isinstance(runtime_data, dict)
                 and "maxGlobalChildren" in runtime_data
                 and "defaultTimeoutSeconds" in runtime_data
             ):
-                self._runtime = RuntimeConfig(
-                    max_global_children=runtime_data["maxGlobalChildren"],
-                    default_timeout_seconds=runtime_data["defaultTimeoutSeconds"],
-                )
+                max_children = runtime_data["maxGlobalChildren"]
+                timeout = runtime_data["defaultTimeoutSeconds"]
+                if isinstance(max_children, int) and isinstance(timeout, int):
+                    self._runtime = RuntimeConfig(
+                        max_global_children=max_children,
+                        default_timeout_seconds=timeout,
+                    )
 
             logger.info("Configuration loaded successfully")
 

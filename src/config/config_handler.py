@@ -72,7 +72,8 @@ def get_config() -> dict[str, object]:
     try:
         ensure_config_exists()
         with open(CONFIG_FILE, "r") as f:
-            return json.load(f)
+            config: dict[str, object] = json.load(f)
+            return config
     except Exception as e:
         logger.error(f"Error reading config: {str(e)}")
         raise
