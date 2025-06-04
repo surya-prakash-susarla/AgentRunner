@@ -15,7 +15,7 @@ class MCPServerConfig:
     command: str
     args: List[str]
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, str | list[str]]:
         return {"command": self.command, "args": self.args}
 
 
@@ -62,11 +62,11 @@ class RuntimeConfig:
 
 
 class ConfigManager:
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize configuration manager and load config immediately"""
         self._agent_configs: Dict[str, AgentRuntime] = {}
         self._runtime: Optional[RuntimeConfig] = None
-        self._mcp_config: MCPConfig = None
+        self._mcp_config: Optional[MCPConfig] = None
         self._load_config()
 
     @property
@@ -94,7 +94,7 @@ class ConfigManager:
         """Get MCP configuration"""
         return self._mcp_config
 
-    def _load_config(self):
+    def _load_config(self) -> None:
         """Load configuration from the config file"""
         try:
             from src.config.config_handler import get_config

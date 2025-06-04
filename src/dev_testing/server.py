@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 
-echo_mcp_server = FastMCP("Echo")
+echo_mcp_server: FastMCP = FastMCP("Echo")
 
 
 @echo_mcp_server.resource("echo://{message}")

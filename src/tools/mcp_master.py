@@ -153,7 +153,7 @@ class McpMaster:
         logger.info("Required servers: {servers}".format(servers=servers))
 
         # Create a combined configuration with all required servers
-        combined_config = {"mcpServers": {}}
+        combined_config: dict[str, dict] = {"mcpServers": {}}
         for server_name in servers:
             server_config = self._mcp_config.get_server(server_name).to_dict()
             combined_config["mcpServers"][server_name] = server_config

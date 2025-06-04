@@ -11,10 +11,10 @@ from .agent_process_input import AgentProcessInput
 
 
 class AgentProcess:
-    def __init__(self, input_config: AgentProcessInput):
-        self.input_q = Queue()
-        self.output_q = Queue()
-        self._input_config = input_config
+    def __init__(self, input_config: AgentProcessInput) -> None:
+        self.input_q: Queue = Queue()
+        self.output_q: Queue = Queue()
+        self._input_config: AgentProcessInput = input_config
         self.logger = setup_logger(__name__, logging.INFO)
         self.logger.info("Initializing agent process %s", input_config.name)
 
@@ -27,7 +27,7 @@ class AgentProcess:
         self.proc.start()
 
     @staticmethod
-    def _run_agent(input_q: Queue, output_q: Queue, input_config: AgentProcessInput):
+    def _run_agent(input_q: Queue, output_q: Queue, input_config: AgentProcessInput) -> None:
         """Run loop for the child agent."""
 
         proc = current_process()

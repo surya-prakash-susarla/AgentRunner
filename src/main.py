@@ -23,7 +23,7 @@ app = typer.Typer(
 console = Console()
 
 
-def initialize():
+def initialize() -> None:
     # Initialize the config files and config file handler.
     get_config()
 
@@ -66,7 +66,7 @@ def chat():
 
 
 @app.command()
-def config():
+def config() -> None:
     """Edit the configuration file in your default editor"""
     try:
         edit_config()
@@ -75,7 +75,7 @@ def config():
         console.print(f"[red]Error editing configuration: {str(e)}[/red]")
 
 
-def main():
+def main() -> None:
     load_dotenv()
     initialize()
     app()

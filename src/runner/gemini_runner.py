@@ -17,18 +17,20 @@ class GeminiRunner(AgentRunner):
         instruction: str,
         model: str = "gemini-2.0-flash-001",
         log_level: int = logging.INFO,
-    ):
+    ) -> None:
         self.logger = setup_logger(__name__, log_level)
         self.logger.debug("Initializing GeminiRunner")
 
-        self.client = genai.Client()
-        self.model = model
-        self.instruction = instruction
-        self.log_level = log_level
+        self.client: genai.Client = genai.Client()
+        self.model: str = model
+        self.instruction: str = instruction
+        self.log_level: int = log_level
+        self._mcp_client: Client | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
         # Initialize session manager immediately
-        self._session_manager = SessionsManager()
-        self._session_id = self._session_manager.createSession(instruction)
+        self._session_manager: SessionsManager = SessionsManager()
+        self._session_id: str = self._session_manager.createSession(instruction)
 
         # Initialize event loop
         self._event_loop = asyncio.new_event_loop()
@@ -55,7 +57,7 @@ class GeminiRunner(AgentRunner):
         """
         return self._mcp_client
 
-    async def getResponseAsync(self, query_string: str):
+    async def getResponseAsync(self, query_string: str) -> str | None:
         self.logger.debug("Processing query: %s", query_string)
         session = self._session_manager.getSessionDetails(self._session_id)
         self._session_manager.recordUserInteractionInSession(
@@ -98,10 +100,10 @@ class GeminiRunner(AgentRunner):
             )
         return response_txt
 
-    def getResponse(self, query: str):
+    def getResponse(self, query: str) -> str | None:
         return self._event_loop.run_until_complete(self.getResponseAsync(query))
 
-    async def cleanup(self):
+    async def cleanup(self) -> None:
         """Cleanup event loop"""
         if self._event_loop and not self._event_loop.is_closed():
             self._event_loop.close()

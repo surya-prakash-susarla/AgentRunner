@@ -3,7 +3,7 @@ import asyncio
 from fastmcp import Client
 
 
-async def test():
+async def test() -> None:
     config = {
         "mcpServers": {
             "everything": {

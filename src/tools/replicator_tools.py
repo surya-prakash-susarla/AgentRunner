@@ -17,12 +17,12 @@ from src.utils.logging_config import setup_logger
 logger = setup_logger(__name__, logging.INFO)
 
 # Create FastMCP app
-replicator_tools_server = FastMCP("ReplicatorToolsServer")
+replicator_tools_server: FastMCP = FastMCP("ReplicatorToolsServer")
 
 
 @replicator_tools_server.tool()
 async def create_child_agent(
-    child_type: str, child_name: str, instruction: str, tool_names: List[str] = None
+    child_type: str, child_name: str, instruction: str, tool_names: List[str]
 ) -> str:
     """Creates a specialized child agent of a given type with specific tools and instruction.
 

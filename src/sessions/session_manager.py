@@ -50,7 +50,7 @@ class SessionsManager:
         else:
             print(f"Session {session_id} not found")
 
-    def deleteSession(self, session_id: str):
+    def deleteSession(self, session_id: str) -> None:
         """Removes a session"""
         if session_id in self.sessions:
             del self.sessions[session_id]
