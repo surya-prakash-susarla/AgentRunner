@@ -1,0 +1,13 @@
+agents:
+  gemini:
+    api_key: ${GOOGLE_API_KEY}
+    is_main: true
+    model: gemini-pro
+
+logging:
+  level: ${LOG_LEVEL:INFO}
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+mcp:
+  port: ${MCP_PORT:5000}
+  host: "localhost"
