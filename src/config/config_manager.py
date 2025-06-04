@@ -4,6 +4,7 @@ from enum import Enum
 from functools import lru_cache
 from typing import Dict, List, Optional
 
+from src.config.config_handler import get_config
 from src.utils.logging_config import setup_logger
 
 logger = setup_logger(__name__, logging.INFO)
@@ -154,8 +155,6 @@ class ConfigManager:
     def _load_config(self) -> None:
         """Load configuration from the config file."""
         try:
-            from src.config.config_handler import get_config
-
             config_data = get_config()
 
             # Load MCP configuration
