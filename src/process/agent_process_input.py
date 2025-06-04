@@ -72,6 +72,7 @@ class AgentProcessInput:
 
         Returns:
             List of error messages. Empty if configuration is valid.
+
         """
         errors: list[str] = []
 

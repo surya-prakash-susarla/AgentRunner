@@ -20,6 +20,7 @@ class AgentProcess:
 
     Args:
         input_config: Config object with details for creating and running the agent.
+
     """
 
     def __init__(self, input_config: AgentProcessInput) -> None:

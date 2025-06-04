@@ -23,6 +23,7 @@ class SessionsManager:
 
         Returns:
             str: The newly created session ID.
+
         """
         session_id: str = str(uuid.uuid4())
         self.sessions[session_id] = Session(
