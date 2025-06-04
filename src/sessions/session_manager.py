@@ -13,7 +13,10 @@ class SessionsManager:
         self.sessions: Dict[str, Session] = {}
 
     def create_session(self, base_instruction: str) -> str:
-        """Create a new UUID for the session and initialize a session object to store the instruction.
+        """Create a new session with the given instruction.
+
+        Creates a new unique ID for the session and initializes a session object
+        to store the base instruction.
 
         Args:
             base_instruction: The base instruction to initialize the session with.
@@ -39,6 +42,7 @@ class SessionsManager:
 
         Returns:
             Session | None: The session object if found, None otherwise.
+
         """
         if session_id in self.sessions:
             return self.sessions[session_id]
@@ -50,6 +54,7 @@ class SessionsManager:
         Args:
             session_id: The ID of the session to update.
             user_message: The message from the user to record.
+
         """
         if session_id in self.sessions:
             self.sessions[session_id].user_messages.append(user_message)
@@ -64,6 +69,7 @@ class SessionsManager:
         Args:
             session_id: The ID of the session to update.
             system_message: The message from the system to record.
+
         """
         if session_id in self.sessions:
             self.sessions[session_id].system_messages.append(system_message)
@@ -77,6 +83,7 @@ class SessionsManager:
 
         Args:
             session_id: The ID of the session to delete.
+
         """
         if session_id in self.sessions:
             del self.sessions[session_id]

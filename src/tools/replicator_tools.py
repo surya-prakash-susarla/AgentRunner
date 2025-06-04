@@ -142,14 +142,11 @@ async def ask_child_agent(child_name: str, question: str) -> str:
 async def get_current_children() -> str:
     """List all currently running child agents.
 
-    Gets a list of all active child agents in the system. If no agents are
-    currently running, indicates this in the response.
-
     Returns:
-        A message listing active child agent names or indicating none exist.
+        A message listing active child agents, or indicating none exist.
 
     Raises:
-        ChildAgentOperationError: If there's an error accessing the children.
+        ChildAgentOperationError: If there's an error accessing children.
 
     """
     logger.info("Received request to list current child agents")
@@ -161,14 +158,12 @@ async def get_current_children() -> str:
         if not replica_manager.children:
             return "No child agents currently exist"
 
-        # Get all child names and format nicely
+        # Get all child names and create readable list
         child_names = list(replica_manager.children.keys())
         child_list = ", ".join(child_names)
-
-        # Build response with guidance on using names
         msg = (
             f"Current child agents: {child_list}. "
-            "Use these exact names when referencing children."
+            "Use these exact names when working with these agents."
         )
         logger.info(msg)
         return msg
@@ -223,10 +218,10 @@ async def kill_child_agent(child_name: str) -> str:
 
 @replicator_tools_server.tool()
 async def get_available_child_types() -> List[str]:
-    """Gets the available child agent types from the config.
+    """Return a list of available child agent types from the config.
 
     Returns:
-        List[str]: A list of the available child agent types. These types should be used exactly as returned.
+        List[str]: The available child agent types, use values exactly as returned.
 
     """
     logger.info("Received request to list available child agent types")

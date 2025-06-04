@@ -21,6 +21,7 @@ class Session:
         """Return a string representation of the session.
 
         Returns:
+
             A formatted string showing the base instruction and message history.
         """
         conversation = []
