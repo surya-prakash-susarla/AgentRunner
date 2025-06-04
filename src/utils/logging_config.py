@@ -3,14 +3,17 @@ import logging
 
 
 def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
-    """Creates and configures a logger instance for the given module
+    """Create and configure a logger instance for the given module.
+
+    Sets up a logger with consistent formatting and configuration options
+    across the application.
 
     Args:
-        name: The name of the module (typically __name__)
-        level: The logging level to use
+        name: The name of the module (typically __name__).
+        level: The logging level to use.
 
     Returns:
-        A configured logger instance
+        A configured logger instance.
 
     """
     logger = logging.getLogger(name)

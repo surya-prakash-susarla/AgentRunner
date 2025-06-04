@@ -68,13 +68,13 @@ class GeminiRunner(AgentRunner):
         """Get a response from the agent synchronously.
 
         Args:
-            query_string: The query to send to the agent
+            query_string: The query to send to the agent.
 
         Returns:
-            The agent's response
+            The agent's response.
 
         Raises:
-            RuntimeError: If there's an error getting the response or if response is empty
+            RuntimeError: If there's an error getting the response or if empty.
 
         """
 
@@ -86,7 +86,7 @@ class GeminiRunner(AgentRunner):
                 self.logger.error(error_msg)
                 raise RuntimeError(error_msg)
 
-            self._session_manager.recordUserInteractionInSession(
+            self._session_manager.record_user_interaction(
                 self._session_id, query_string
             )
 
@@ -123,7 +123,7 @@ class GeminiRunner(AgentRunner):
             if response_txt is None:
                 raise RuntimeError("Received empty response from model")
 
-            self._session_manager.recordSystemInteractionInSession(
+            self._session_manager.record_system_interaction(
                 self._session_id, response_txt
             )
             return response_txt
@@ -133,7 +133,10 @@ class GeminiRunner(AgentRunner):
         return response
 
     async def cleanup(self) -> None:
-        """Cleanup event loop"""
+        """Clean up the event loop.
+
+        Ensures proper cleanup of async resources by closing the event loop.
+        """
         if self._event_loop and not self._event_loop.is_closed():
             self._event_loop.close()
             self._event_loop = cast(asyncio.AbstractEventLoop, None)
