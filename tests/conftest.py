@@ -2,7 +2,6 @@
 
 import pytest
 
-from src.config.config_manager import get_config_manager
 from src.process.agent_process_input import AgentProcessInput
 
 

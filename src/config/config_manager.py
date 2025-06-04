@@ -35,6 +35,7 @@ class MCPConfig:
 
     Args:
         mcp_servers: Dictionary mapping server names to their configurations.
+
     """
 
     mcp_servers: Dict[str, MCPServerConfig] = field(default_factory=dict)
@@ -48,6 +49,7 @@ class MCPConfig:
 
         Returns:
             A new MCPConfig instance.
+
         """
         servers = {
             name: MCPServerConfig(**spec)
@@ -63,6 +65,7 @@ class MCPConfig:
 
         Returns:
             Configuration for the specified server.
+
         """
         return self.mcp_servers[name]
 
@@ -71,6 +74,7 @@ class MCPConfig:
 
         Returns:
             List of server names in the configuration.
+
         """
         return list(self.mcp_servers.keys())
 
@@ -105,6 +109,7 @@ class RuntimeConfig:
     Args:
         max_global_children: Maximum number of child processes allowed.
         default_timeout_seconds: Default timeout for operations in seconds.
+
     """
 
     max_global_children: int
@@ -274,5 +279,6 @@ def get_config_manager() -> ConfigManager:
 
     Returns:
         The singleton ConfigManager instance.
+
     """
     return ConfigManager()

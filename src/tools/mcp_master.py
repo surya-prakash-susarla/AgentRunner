@@ -27,11 +27,12 @@ class McpMaster:
 
         Raises:
             ValueError: If mcp_config is None.
+
         """
         if mcp_config is None:
             raise ValueError("MCP configuration cannot be None")
         self._mcp_config = mcp_config
-        self._tool_mapping = {}  # Maps tool names to server names
+        self._tool_mapping: Dict[str, str] = {}  # Maps tool names to server names
         self._create_tool_mapping()
 
     def _create_tool_mapping(self) -> None:
@@ -60,6 +61,7 @@ class McpMaster:
 
         Returns:
             List of tool names available on the server.
+
         """
         async with Client(server_config) as client:
             tools = await client.list_tools()
@@ -76,6 +78,7 @@ class McpMaster:
 
         Raises:
             ValueError: If MCP config not found for the server.
+
         """
         mcp_config = get_config_manager().get_mcp_config()
         if mcp_config is None:
@@ -90,6 +93,7 @@ class McpMaster:
 
         Returns:
             List of all known tool names that can be used with MCP clients.
+
         """
         return list(self._tool_mapping.keys())
 
